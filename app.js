@@ -336,63 +336,7 @@ function updateLiveClock() {
 
 updateLiveClock();
 setInterval(updateLiveClock, 1000);
-  const introScreen = document.getElementById("introScreen");
-const introVideo = document.getElementById("introVideo");
-
-function finishIntro() {
-  if (!introScreen) return;
-
-  introScreen.classList.add("hide");
-
-  setTimeout(() => {
-    introScreen.remove();
-  }, 800);
-}
-
-if (introVideo) {
-  introVideo.addEventListener("ended", finishIntro);
-  introVideo.addEventListener("error", finishIntro);
-
-  setTimeout(finishIntro, 12000);
-} else {
-  finishIntro();
-}
-const introScreen = document.getElementById("introScreen");
-const introVideo = document.getElementById("introVideo");
-
-function finishIntro() {
-  if (introFinished) return;
-
-  introFinished = true;
-
-  if (introScreen) {
-    introScreen.classList.add("hide");
-
-    setTimeout(() => {
-      introScreen.style.display = "none";
-    }, 800);
-  }
-
-  restartSlideTimer();
-}
-
-if (introVideo && introScreen) {
-  introVideo.addEventListener("ended", finishIntro);
-  introVideo.addEventListener("error", finishIntro);
-
-  const playPromise = introVideo.play();
-
-  if (playPromise) {
-    playPromise.catch(() => {
-      finishIntro();
-    });
-  }
-
-  setTimeout(finishIntro, 12000);
-} else {
-  finishIntro();
-}
-const introScreen = document.getElementById("introScreen");
+ const introScreen = document.getElementById("introScreen");
 const introVideo = document.getElementById("introVideo");
 
 function finishIntro() {
@@ -408,6 +352,12 @@ function finishIntro() {
 if (introVideo) {
   introVideo.addEventListener("ended", finishIntro);
   introVideo.addEventListener("error", finishIntro);
+
+  const playPromise = introVideo.play();
+
+  if (playPromise) {
+    playPromise.catch(finishIntro);
+  }
 
   setTimeout(finishIntro, 12000);
 } else {
