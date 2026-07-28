@@ -39,15 +39,32 @@ function buildSlides(data) {
 
   return [
     `
-      <section class="slide active">
-        <div class="slide-inner">
-          <div class="kicker">המסך של חדר הנהגים</div>
-          <h1>${escapeHtml(s.systemName || "מטענים חיפה LIVE")}</h1>
-          <div class="line"></div>
-          <p>${escapeHtml(s.openingTitle || "ברוכים הבאים לחדר הנהגים")}</p>
-        </div>
-      </section>
-    `,
+      `
+  <section class="slide opening-slide active">
+    <div class="opening-glow"></div>
+
+    <div class="slide-inner opening-content">
+      <div class="opening-badge">🚂 חדר נהגים</div>
+
+      <h1 class="opening-title">
+        ${escapeHtml(s.systemName || "מטענים חיפה LIVE")}
+      </h1>
+
+      <div class="opening-line"></div>
+
+      <p class="opening-subtitle">
+        ${escapeHtml(s.openingTitle || "ברוכים הבאים לחדר הנהגים")}
+      </p>
+
+      <div class="opening-icons">
+        <span>🏆</span>
+        <span>☕</span>
+        <span>📸</span>
+        <span>😂</span>
+      </div>
+    </div>
+  </section>
+`,
     `
       <section class="slide">
         <div class="slide-inner">
