@@ -92,7 +92,13 @@ function buildSlides(data) {
           <h2 class="driver-name">
             ${escapeHtml(s.driverName || "בקרוב יפורסם")}
           </h2>
-
+<div class="driver-stars" aria-label="חמישה כוכבים">
+  <span>★</span>
+  <span>★</span>
+  <span>★</span>
+  <span>★</span>
+  <span>★</span>
+</div>
           <div class="driver-divider"></div>
 
           <p class="driver-reason">
