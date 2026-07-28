@@ -615,9 +615,12 @@ filter: drop-shadow(0 0 12px rgba(255, 200, 70, 0.45));
   left: -8vw;
   width: 28vw;
   height: 28vw;
-  border: 2px solid rgba(255, 181, 46, 0.07);
+  border: 2px solid rgba(255, 181, 46, 0.12);
   border-radius: 50%;
   animation: driverShapeClean 16s linear infinite;
+  box-shadow:
+  0 0 45px rgba(255, 181, 46, 0.08),
+  inset 0 0 55px rgba(255, 181, 46, 0.04);
 }
 
 @keyframes driverPhotoEnter {
