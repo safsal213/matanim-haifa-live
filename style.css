@@ -540,9 +540,28 @@ filter: drop-shadow(0 0 12px rgba(255, 200, 70, 0.45));
   font-size: clamp(57px, 6vw, 94px);
   line-height: 1.03;
   letter-spacing: -2px;
-  text-shadow: 0 12px 30px rgba(0, 0, 0, 0.36);
+  text-shadow:
+  0 4px 12px rgba(0, 0, 0, 0.45),
+  0 0 18px rgba(155, 212, 255, 0.14);
+  position: relative;
+display: inline-block;
 }
 
+.driver-name::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -10px;
+  width: 42%;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--accent),
+    rgba(255, 181, 46, 0)
+  );
+  box-shadow: 0 0 12px rgba(255, 181, 46, 0.35);
+}
 .driver-stars {
   margin: 14px 0 19px;
   display: flex;
