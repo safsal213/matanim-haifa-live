@@ -1,4 +1,4 @@
-const CACHE_NAME = "matanim-haifa-live-v28";
+const CACHE_NAME = "matanim-haifa-live-v29";
 const APP_FILES = [
   "./",
   "./index.html",
@@ -6,7 +6,8 @@ const APP_FILES = [
   "./app.js",
   "./config.js",
   "./data.example.json",
-  "./manifest.webmanifest"
+  "./manifest.webmanifest",
+  "./videos/logo.mp4"
 ];
 
 self.addEventListener("install", event => {

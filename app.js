@@ -183,7 +183,8 @@ function render(data) {
   updateCounter();
   updateLastUpdated(data.updatedAt);
   if (introFinished) {
-  restartSlideTimer();
+    restartSlideTimer();
+  }
 }
 
 function updateCounter() {
@@ -340,13 +341,21 @@ setInterval(updateLiveClock, 1000);
 const introVideo = document.getElementById("introVideo");
 
 function finishIntro() {
-  if (!introScreen) return;
+  if (introFinished) return;
 
-  introScreen.classList.add("hide");
+  introFinished = true;
 
-  setTimeout(() => {
-    introScreen.style.display = "none";
-  }, 800);
+  if (introScreen) {
+    introScreen.classList.add("hide");
+
+    setTimeout(() => {
+      introScreen.style.display = "none";
+    }, 800);
+  }
+
+  if (appData) {
+    restartSlideTimer();
+  }
 }
 
 if (introVideo) {
