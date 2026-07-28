@@ -65,14 +65,13 @@ function buildSlides(data) {
   </section>
 `,
    `
-  `
   <section class="slide driver-slide">
     <div class="driver-background-shape"></div>
 
     <div class="driver-month-shell">
       <div class="driver-heading">
         <span>🏆</span>
-        נהג החודש
+        <span>נהג החודש</span>
       </div>
 
       <div class="driver-card">
@@ -117,8 +116,6 @@ function buildSlides(data) {
         </div>
       </div>
     </div>
-  </section>
-`,
   </section>
 `,
     `
