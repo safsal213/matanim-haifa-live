@@ -65,55 +65,60 @@ function buildSlides(data) {
   </section>
 `,
    `
+  `
   <section class="slide driver-slide">
     <div class="driver-background-shape"></div>
 
-    <div class="slide-inner">
-      <div class="driver-heading">🏆 נהג החודש</div>
+    <div class="driver-month-shell">
+      <div class="driver-heading">
+        <span>🏆</span>
+        נהג החודש
+      </div>
 
-     <div class="driver-card">
+      <div class="driver-card">
+        <div class="driver-photo-wrap">
+          ${
+            s.driverImage
+              ? `<img
+                   class="driver-photo"
+                   src="${escapeHtml(s.driverImage)}"
+                   alt="נהג החודש"
+                 >`
+              : `<div class="driver-photo-placeholder">🚂</div>`
+          }
 
-  <div class="driver-photo-wrap">
+          <div class="driver-medal">★</div>
+          <div class="driver-photo-shine"></div>
+        </div>
 
-    ${
-      s.driverImage
-        ? `<img
-             class="driver-photo"
-             src="${escapeHtml(s.driverImage)}"
-             alt="נהג החודש">`
-        : `<div class="driver-photo-placeholder">🚂</div>`
-    }
+        <div class="driver-info">
+          <div class="driver-label">נבחר החודש</div>
 
-    <div class="driver-medal">★</div>
+          <h2 class="driver-name">
+            ${escapeHtml(s.driverName || "בקרוב יפורסם")}
+          </h2>
 
-  </div>
+          <div class="driver-stars" aria-label="חמישה כוכבים">
+            <span>★</span>
+            <span>★</span>
+            <span>★</span>
+            <span>★</span>
+            <span>★</span>
+          </div>
 
-  <div class="driver-info">
+          <div class="driver-divider"></div>
 
-    <div class="driver-label">
-      🏆 נהג החודש
+          <p class="driver-reason">
+            ${escapeHtml(
+              s.driverReason ||
+              "על מקצועיות, עזרה הדדית ואווירה טובה"
+            )}
+          </p>
+        </div>
+      </div>
     </div>
-
-    <h2 class="driver-name">
-      ${escapeHtml(s.driverName || "בקרוב יפורסם")}
-    </h2>
-
-    <div class="driver-stars">
-      ★★★★★
-    </div>
-
-    <div class="driver-divider"></div>
-
-    <p class="driver-reason">
-      ${escapeHtml(
-        s.driverReason ||
-        "על מקצועיות, עזרה הדדית ואווירה טובה"
-      )}
-    </p>
-
-  </div>
-
-</div>
+  </section>
+`,
   </section>
 `,
     `
