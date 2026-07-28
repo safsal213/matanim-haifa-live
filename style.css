@@ -879,3 +879,25 @@ display: inline-block;
     0 0 10px rgba(69, 174, 255, 0.22),
     0 2px 8px rgba(0, 0, 0, 0.35);
 }
+.topbar-info {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.live-date {
+  color: #d8e6f0;
+  font-size: clamp(14px, 1.25vw, 20px);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .live-date {
+    display: none;
+  }
+
+  .topbar-info {
+    gap: 10px;
+  }
+}
