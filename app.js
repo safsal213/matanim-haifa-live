@@ -371,3 +371,24 @@ if (introVideo && introScreen) {
 } else {
   finishIntro();
 }
+const introScreen = document.getElementById("introScreen");
+const introVideo = document.getElementById("introVideo");
+
+function finishIntro() {
+  if (!introScreen) return;
+
+  introScreen.classList.add("hide");
+
+  setTimeout(() => {
+    introScreen.style.display = "none";
+  }, 800);
+}
+
+if (introVideo) {
+  introVideo.addEventListener("ended", finishIntro);
+  introVideo.addEventListener("error", finishIntro);
+
+  setTimeout(finishIntro, 12000);
+} else {
+  finishIntro();
+}
