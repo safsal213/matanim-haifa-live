@@ -312,24 +312,25 @@ refreshData();
 setInterval(refreshData, Math.max(1, REFRESH_MINUTES) * 60 * 1000);
 function updateLiveClock() {
   const clock = document.getElementById("liveClock");
-const dateElement = document.getElementById("liveDate");
-  if (!clock) return;
-
+  const dateElement = document.getElementById("liveDate");
   const now = new Date();
 
-  clock.textContent = now.toLocaleTimeString("he-IL", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit"
-  });
-  if (dateElement) {
-  dateElement.textContent = now.toLocaleDateString("he-IL", {
-    weekday: "long",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric"
-  });
+  if (clock) {
+    clock.textContent = now.toLocaleTimeString("he-IL", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+  }
 
+  if (dateElement) {
+    dateElement.textContent = now.toLocaleDateString("he-IL", {
+      weekday: "long",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    });
+  }
 }
 
 updateLiveClock();
