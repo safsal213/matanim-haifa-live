@@ -428,6 +428,7 @@ p {
   gap: clamp(55px, 6vw, 90px);
   align-items: center;
   direction: rtl;
+  animation: driverCardFloat 6s ease-in-out infinite;
 }
 
 .driver-photo-wrap {
@@ -726,6 +727,21 @@ display: inline-block;
   }
 }
 
+@keyframes driverCardFloat {
+
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-3px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+
+}
 @media (max-width: 850px) {
   .driver-month-shell {
     padding: 24px 0 55px;
