@@ -76,7 +76,9 @@ body {
 .slide {
   position: absolute;
   inset: 0;
-  display: none;
+display: flex;
+visibility: hidden;
+pointer-events: none;
   align-items: center;
   justify-content: center;
   padding: 4vw;
@@ -86,13 +88,15 @@ body {
 transition:
   opacity 0.7s ease,
   transform 0.7s ease;
+  visibility: hidden;
+pointer-events: none;
 }
 
 .slide.active {
-  display: flex;
-  animation: fadeIn 800ms ease forwards;
+  visibility: visible;
+  pointer-events: auto;
   opacity: 1;
-transform: scale(1);
+  transform: scale(1);
 }
 
 .slide-inner {
