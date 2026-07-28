@@ -39,7 +39,6 @@ function buildSlides(data) {
 
   return [
     `
-      `
   <section class="slide opening-slide active">
     <div class="opening-glow"></div>
 
