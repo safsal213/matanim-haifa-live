@@ -4,7 +4,7 @@ const { DATA_URL, DEFAULT_SLIDE_SECONDS, REFRESH_MINUTES } = window.APP_CONFIG;
 let appData = null;
 let currentSlide = 0;
 let slideTimer = null;
-
+let introFinished = false;
 const slideshow = document.getElementById("slideshow");
 const slideCounter = document.getElementById("slideCounter");
 const connectionStatus = document.getElementById("connectionStatus");
@@ -182,6 +182,7 @@ function render(data) {
   slideshow.innerHTML = buildSlides(data).join("");
   updateCounter();
   updateLastUpdated(data.updatedAt);
+  if (introFinished) {
   restartSlideTimer();
 }
 
@@ -335,3 +336,38 @@ function updateLiveClock() {
 
 updateLiveClock();
 setInterval(updateLiveClock, 1000);
+const introScreen = document.getElementById("introScreen");
+const introVideo = document.getElementById("introVideo");
+
+function finishIntro() {
+  if (introFinished) return;
+
+  introFinished = true;
+
+  if (introScreen) {
+    introScreen.classList.add("hide");
+
+    setTimeout(() => {
+      introScreen.style.display = "none";
+    }, 800);
+  }
+
+  restartSlideTimer();
+}
+
+if (introVideo && introScreen) {
+  introVideo.addEventListener("ended", finishIntro);
+  introVideo.addEventListener("error", finishIntro);
+
+  const playPromise = introVideo.play();
+
+  if (playPromise) {
+    playPromise.catch(() => {
+      finishIntro();
+    });
+  }
+
+  setTimeout(finishIntro, 12000);
+} else {
+  finishIntro();
+}
