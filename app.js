@@ -310,3 +310,19 @@ if ("serviceWorker" in navigator) {
 
 refreshData();
 setInterval(refreshData, Math.max(1, REFRESH_MINUTES) * 60 * 1000);
+function updateLiveClock() {
+  const clock = document.getElementById("liveClock");
+
+  if (!clock) return;
+
+  const now = new Date();
+
+  clock.textContent = now.toLocaleTimeString("he-IL", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+}
+
+updateLiveClock();
+setInterval(updateLiveClock, 1000);
