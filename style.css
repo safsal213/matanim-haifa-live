@@ -566,7 +566,7 @@ display: inline-block;
   box-shadow: 0 0 12px rgba(255, 181, 46, 0.35);
 }
 .driver-stars {
-  margin: 14px 0 19px;
+  margin: 12px 0 10px;
   display: flex;
   justify-content: flex-start;
   gap: 10px;
@@ -606,7 +606,7 @@ display: inline-block;
 .driver-divider {
   width: min(370px, 75%);
   height: 4px;
-  margin: 0 0 23px;
+  margin: 0 0 14px;
   overflow: hidden;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.14);
