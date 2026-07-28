@@ -867,3 +867,15 @@ display: inline-block;
     padding: 0 14px;
   }
 }
+.live-clock {
+  min-width: 105px;
+  color: #9bd4ff;
+  font-size: clamp(18px, 1.6vw, 25px);
+  font-weight: 800;
+  direction: ltr;
+  text-align: center;
+  letter-spacing: 1px;
+  text-shadow:
+    0 0 10px rgba(69, 174, 255, 0.22),
+    0 2px 8px rgba(0, 0, 0, 0.35);
+}
