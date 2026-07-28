@@ -447,9 +447,10 @@ p {
     ),
     linear-gradient(145deg, #263f55, #152d43);
   box-shadow:
-    0 0 26px rgba(255, 181, 46, 0.14),
-    0 24px 65px rgba(0, 0, 0, 0.45);
-  animation: driverPhotoEnter 850ms ease both;
+  0 0 0 3px rgba(255, 193, 73, 0.18),
+  0 0 28px rgba(255, 181, 46, 0.22),
+  0 22px 55px rgba(0, 0, 0, 0.48),
+  inset 0 0 22px rgba(255, 255, 255, 0.05);
 }
 
 .driver-photo,
