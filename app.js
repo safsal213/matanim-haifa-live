@@ -64,59 +64,6 @@ function buildSlides(data) {
     </div>
   </section>
 `,
-   `
-  <section class="slide driver-slide">
-    <div class="driver-background-shape"></div>
-
-    <div class="driver-month-shell">
-      <div class="driver-heading">
-        <span>🏆</span>
-        <span>נהג החודש</span>
-      </div>
-
-      <div class="driver-card">
-        <div class="driver-photo-wrap">
-          ${
-            s.driverImage
-              ? `<img
-                   class="driver-photo"
-                   src="${escapeHtml(s.driverImage)}"
-                   alt="נהג החודש"
-                 >`
-              : `<div class="driver-photo-placeholder">🚂</div>`
-          }
-
-          <div class="driver-medal">★</div>
-          <div class="driver-photo-shine"></div>
-        </div>
-
-        <div class="driver-info">
-          <div class="driver-label">נבחר החודש</div>
-
-          <h2 class="driver-name">
-            ${escapeHtml(s.driverName || "בקרוב יפורסם")}
-          </h2>
-
-          <div class="driver-stars" aria-label="חמישה כוכבים">
-            <span>★</span>
-            <span>★</span>
-            <span>★</span>
-            <span>★</span>
-            <span>★</span>
-          </div>
-
-          <div class="driver-divider"></div>
-
-          <p class="driver-reason">
-            ${escapeHtml(
-              s.driverReason ||
-              "על מקצועיות, עזרה הדדית ואווירה טובה"
-            )}
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
 `,
     `
       <section class="slide">
