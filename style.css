@@ -47,6 +47,9 @@ body {
   height: 66px;
   padding: 0 28px;
   border-bottom: 1px solid var(--border);
+  box-shadow:
+  0 8px 24px rgba(0, 0, 0, 0.28),
+  0 0 20px rgba(69, 174, 255, 0.06);
 }
 
 .statusbar {
