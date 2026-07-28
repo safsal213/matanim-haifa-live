@@ -31,6 +31,16 @@ function imageMarkup(url, alt) {
 
 
 function normalizeNewsItems(settings = {}) {
+  const separateItems = Array.from({ length: 10 }, (_, index) => {
+    const key = `news${index + 1}`;
+    return String(settings[key] ?? "").trim();
+  }).filter(Boolean);
+
+  if (separateItems.length) {
+    return separateItems;
+  }
+
+  // תאימות לאחור: עדיין אפשר להשתמש בשדה news אחד עם הפרדה באמצעות |
   const rawNews = settings.news ?? settings.newsTicker ?? settings.ticker ?? "";
 
   if (Array.isArray(rawNews)) {
