@@ -4,9 +4,13 @@ const { DATA_URL, DEFAULT_SLIDE_SECONDS, REFRESH_MINUTES } = window.APP_CONFIG;
 let appData = null;
 let currentSlide = 0;
 let slideTimer = null;
+let countdownTimer = null;
+let slideDurationSeconds = DEFAULT_SLIDE_SECONDS;
 let introFinished = false;
 const slideshow = document.getElementById("slideshow");
 const slideCounter = document.getElementById("slideCounter");
+const slideTimerDisplay = document.getElementById("slideTimerDisplay");
+const slideTimerValue = document.getElementById("slideTimerValue");
 const connectionStatus = document.getElementById("connectionStatus");
 const lastUpdated = document.getElementById("lastUpdated");
 
@@ -200,14 +204,51 @@ function showNextSlide() {
   currentSlide = (currentSlide + 1) % slides.length;
   slides[currentSlide].classList.add("active");
   updateCounter();
+  restartSlideTimer();
+}
+
+function updateSlideCountdown(secondsLeft, progress) {
+  if (slideTimerValue) {
+    slideTimerValue.textContent = Math.max(0, Math.ceil(secondsLeft));
+  }
+
+  if (slideTimerDisplay) {
+    const safeProgress = Math.max(0, Math.min(1, progress));
+    slideTimerDisplay.style.setProperty("--timer-progress", `${safeProgress * 360}deg`);
+  }
+}
+
+function startSlideCountdown() {
+  if (countdownTimer) clearInterval(countdownTimer);
+
+  const startedAt = Date.now();
+  const durationMs = slideDurationSeconds * 1000;
+  updateSlideCountdown(slideDurationSeconds, 1);
+
+  countdownTimer = setInterval(() => {
+    const elapsed = Date.now() - startedAt;
+    const remainingMs = Math.max(0, durationMs - elapsed);
+    const secondsLeft = remainingMs / 1000;
+    const progress = remainingMs / durationMs;
+
+    updateSlideCountdown(secondsLeft, progress);
+
+    if (remainingMs <= 0) {
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+    }
+  }, 100);
 }
 
 function restartSlideTimer() {
-  if (slideTimer) clearInterval(slideTimer);
+  if (slideTimer) clearTimeout(slideTimer);
+  if (countdownTimer) clearInterval(countdownTimer);
 
   const seconds = Number(appData?.settings?.slideSeconds) || DEFAULT_SLIDE_SECONDS;
-  const safeSeconds = Math.max(3, seconds);
-  slideTimer = setInterval(showNextSlide, safeSeconds * 1000);
+  slideDurationSeconds = Math.max(3, seconds);
+
+  startSlideCountdown();
+  slideTimer = setTimeout(showNextSlide, slideDurationSeconds * 1000);
 }
 
 function formatUpdatedAt(value) {
