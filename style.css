@@ -422,6 +422,8 @@ p {
   align-items: center;
   text-align: right;
 
+  padding-top: 40px;
+
 }
 
 .driver-photo-wrap {
@@ -437,8 +439,9 @@ p {
   border: 3px solid rgba(255, 255, 255, 0.2);
   border-radius: 28px;
   box-shadow:
-    0 24px 65px rgba(0, 0, 0, 0.42),
-    0 0 30px rgba(255, 181, 46, 0.1);
+    0 0 18px rgba(255,181,46,.18),
+    0 0 45px rgba(255,181,46,.10),
+    0 24px 65px rgba(0,0,0,.45);
 }
 
 .driver-photo {
@@ -462,8 +465,10 @@ p {
 
 .driver-medal {
   position: absolute;
-  left: 18px;
-bottom: 18px;
+ right: 18px;
+top: 18px;
+left: auto;
+bottom: auto;
   width: 88px;
   height: 88px;
   display: flex;
@@ -594,7 +599,7 @@ bottom: 18px;
 .driver-stars {
   display: flex;
   gap: 10px;
-  margin: 4px 0 20px;
+  margin: -8px 0 14px;
   direction: ltr;
   color: var(--accent);
   font-size: clamp(28px, 3vw, 46px);
