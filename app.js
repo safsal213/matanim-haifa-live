@@ -64,18 +64,48 @@ function buildSlides(data) {
     </div>
   </section>
 `,
-    `
-      <section class="slide">
-        <div class="slide-inner">
-          <div class="kicker">🏆 נהג החודש</div>
-          <div class="card">
-            ${imageMarkup(s.driverImage, "נהג החודש")}
-            <h2 class="accent">${escapeHtml(s.driverName || "בקרוב יפורסם")}</h2>
-            <p>${escapeHtml(s.driverReason || "")}</p>
-          </div>
+   `
+  <section class="slide driver-slide">
+    <div class="driver-background-shape"></div>
+
+    <div class="slide-inner">
+      <div class="driver-heading">🏆 נהג החודש</div>
+
+      <div class="driver-layout">
+        <div class="driver-photo-wrap">
+          ${
+            s.driverImage
+              ? `<img
+                   class="driver-photo"
+                   src="${escapeHtml(s.driverImage)}"
+                   alt="נהג החודש"
+                 >`
+              : `<div class="driver-photo-placeholder">🚂</div>`
+          }
+
+          <div class="driver-medal">★</div>
         </div>
-      </section>
-    `,
+
+        <div class="driver-info">
+          <div class="driver-label">נבחר החודש</div>
+
+          <h2 class="driver-name">
+            ${escapeHtml(s.driverName || "בקרוב יפורסם")}
+          </h2>
+
+          <div class="driver-divider"></div>
+
+          <p class="driver-reason">
+            ${escapeHtml(
+              s.driverReason ||
+              "על מקצועיות, עזרה הדדית ואווירה טובה"
+            )}
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+`,
     `
       <section class="slide">
         <div class="slide-inner">
