@@ -637,7 +637,379 @@ bottom: auto;
     opacity: 1;
     transform: scale(1) rotate(0);
   }
+
+/* ==================================================
+   נהג החודש — גרסה נקייה
+   ================================================== */
+
+.driver-slide {
+  overflow: hidden;
+  padding: 0;
+  background:
+    radial-gradient(
+      circle at 13% 55%,
+      rgba(255, 181, 46, 0.11),
+      transparent 30%
+    ),
+    linear-gradient(135deg, #07111f 0%, #0b2943 100%);
 }
+
+.driver-month-shell {
+  position: relative;
+  z-index: 2;
+  width: min(1280px, 92vw);
+  height: 100%;
+  margin: auto;
+  padding: 28px 0 35px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.driver-heading {
+  margin: 0 auto 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: #9bd4ff;
+  font-size: clamp(27px, 2.5vw, 43px);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.driver-card {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(310px, 390px) minmax(450px, 1fr);
+  gap: clamp(55px, 6vw, 90px);
+  align-items: center;
+  direction: rtl;
+}
+
+.driver-photo-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 390px;
+  height: clamp(360px, 47vh, 485px);
+  margin: auto;
+  overflow: hidden;
+  border: 2px solid rgba(255, 213, 130, 0.48);
+  border-radius: 30px;
+  background:
+    radial-gradient(
+      circle at 50% 45%,
+      rgba(255, 181, 46, 0.13),
+      transparent 42%
+    ),
+    linear-gradient(145deg, #263f55, #152d43);
+  box-shadow:
+    0 0 26px rgba(255, 181, 46, 0.14),
+    0 24px 65px rgba(0, 0, 0, 0.45);
+  animation: driverPhotoEnter 850ms ease both;
+}
+
+.driver-photo,
+.driver-photo-placeholder {
+  width: 100%;
+  height: 100%;
+}
+
+.driver-photo {
+  display: block;
+  object-fit: cover;
+}
+
+.driver-photo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(130px, 12vw, 195px);
+}
+
+.driver-medal {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 4;
+  width: 78px;
+  height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid #fff1bd;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #ffc54f, #ffa817);
+  color: #422600;
+  font-size: 36px;
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.38),
+    0 0 20px rgba(255, 181, 46, 0.28);
+  animation: driverMedal 2.2s ease-in-out infinite alternate;
+}
+
+.driver-photo-shine {
+  position: absolute;
+  top: -45%;
+  left: -55%;
+  z-index: 3;
+  width: 24%;
+  height: 190%;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.24),
+    transparent
+  );
+  transform: rotate(22deg);
+  animation: driverShine 6s ease-in-out infinite;
+}
+
+.driver-info {
+  width: 100%;
+  max-width: 680px;
+  padding: 0;
+  text-align: right;
+  animation: driverInfoEnter 900ms 100ms ease both;
+}
+
+.driver-label {
+  display: inline-flex;
+  margin: 0 0 16px;
+  padding: 9px 23px;
+  border: 1px solid rgba(255, 181, 46, 0.15);
+  border-radius: 999px;
+  background: rgba(255, 181, 46, 0.11);
+  color: var(--accent);
+  font-size: clamp(19px, 1.7vw, 28px);
+  font-weight: 800;
+}
+
+.driver-name {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(57px, 6vw, 94px);
+  line-height: 1.03;
+  letter-spacing: -2px;
+  text-shadow: 0 12px 30px rgba(0, 0, 0, 0.36);
+}
+
+.driver-stars {
+  margin: 14px 0 19px;
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+  direction: ltr;
+  color: var(--accent);
+  font-size: clamp(30px, 3vw, 44px);
+  line-height: 1;
+  text-shadow: 0 0 16px rgba(255, 181, 46, 0.42);
+}
+
+.driver-stars span {
+  opacity: 0;
+  transform: scale(0.4);
+  animation: driverStar 450ms ease forwards;
+}
+
+.driver-stars span:nth-child(1) {
+  animation-delay: 350ms;
+}
+
+.driver-stars span:nth-child(2) {
+  animation-delay: 470ms;
+}
+
+.driver-stars span:nth-child(3) {
+  animation-delay: 590ms;
+}
+
+.driver-stars span:nth-child(4) {
+  animation-delay: 710ms;
+}
+
+.driver-stars span:nth-child(5) {
+  animation-delay: 830ms;
+}
+
+.driver-divider {
+  width: min(370px, 75%);
+  height: 4px;
+  margin: 0 0 23px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.driver-divider::after {
+  content: "";
+  display: block;
+  width: 43%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  box-shadow: 0 0 14px rgba(255, 181, 46, 0.5);
+  animation: driverLine 3.4s linear infinite;
+}
+
+.driver-reason {
+  max-width: 650px;
+  margin: 0;
+  color: #e9f0f5;
+  font-size: clamp(24px, 2.35vw, 38px);
+  line-height: 1.48;
+}
+
+.driver-background-shape {
+  position: absolute;
+  top: 53%;
+  left: -8vw;
+  width: 28vw;
+  height: 28vw;
+  border: 2px solid rgba(255, 181, 46, 0.07);
+  border-radius: 50%;
+  animation: driverShapeClean 16s linear infinite;
+}
+
+@keyframes driverPhotoEnter {
+  from {
+    opacity: 0;
+    transform: translateX(50px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes driverInfoEnter {
+  from {
+    opacity: 0;
+    transform: translateX(-45px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes driverStar {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes driverMedal {
+  from {
+    transform: rotate(-4deg) scale(1);
+  }
+
+  to {
+    transform: rotate(4deg) scale(1.06);
+  }
+}
+
+@keyframes driverShine {
+  0%,
+  65% {
+    left: -55%;
+    opacity: 0;
+  }
+
+  72% {
+    opacity: 1;
+  }
+
+  90%,
+  100% {
+    left: 135%;
+    opacity: 0;
+  }
+}
+
+@keyframes driverLine {
+  from {
+    transform: translateX(240%);
+  }
+
+  to {
+    transform: translateX(-140%);
+  }
+}
+
+@keyframes driverShapeClean {
+  from {
+    transform: translateY(-50%) rotate(0deg);
+  }
+
+  to {
+    transform: translateY(-50%) rotate(360deg);
+  }
+}
+
+@media (max-width: 850px) {
+  .driver-month-shell {
+    padding: 24px 0 55px;
+  }
+
+  .driver-card {
+    grid-template-columns: minmax(240px, 310px) 1fr;
+    gap: 34px;
+  }
+
+  .driver-photo-wrap {
+    height: clamp(310px, 42vh, 400px);
+  }
+
+  .driver-medal {
+    width: 65px;
+    height: 65px;
+    font-size: 29px;
+  }
+}
+
+@media (max-width: 680px) {
+  .driver-slide {
+    overflow-y: auto;
+  }
+
+  .driver-month-shell {
+    height: auto;
+    min-height: 100%;
+    padding: 30px 0 70px;
+  }
+
+  .driver-card {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+
+  .driver-photo-wrap {
+    width: min(285px, 75vw);
+    height: 320px;
+  }
+
+  .driver-info {
+    text-align: center;
+  }
+
+  .driver-stars {
+    justify-content: center;
+  }
+
+  .driver-divider {
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .driver-reason {
+    margin: auto;
+  }
+}}
 @media (max-width: 760px) {
   .products {
     grid-template-columns: 1fr;
