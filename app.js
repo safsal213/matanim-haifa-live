@@ -336,6 +336,27 @@ function updateLiveClock() {
 
 updateLiveClock();
 setInterval(updateLiveClock, 1000);
+  const introScreen = document.getElementById("introScreen");
+const introVideo = document.getElementById("introVideo");
+
+function finishIntro() {
+  if (!introScreen) return;
+
+  introScreen.classList.add("hide");
+
+  setTimeout(() => {
+    introScreen.remove();
+  }, 800);
+}
+
+if (introVideo) {
+  introVideo.addEventListener("ended", finishIntro);
+  introVideo.addEventListener("error", finishIntro);
+
+  setTimeout(finishIntro, 12000);
+} else {
+  finishIntro();
+}
 const introScreen = document.getElementById("introScreen");
 const introVideo = document.getElementById("introVideo");
 
