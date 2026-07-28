@@ -50,6 +50,8 @@ body {
   box-shadow:
   0 8px 24px rgba(0, 0, 0, 0.28),
   0 0 20px rgba(69, 174, 255, 0.06);
+  overflow: hidden;
+position: fixed;
 }
 
 .statusbar {
@@ -777,7 +779,36 @@ display: inline-block;
     font-size: 29px;
   }
 }
+.topbar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -30%;
+  width: 20%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.10),
+    transparent
+  );
+  transform: skewX(-25deg);
+  animation: topbarShine 10s linear infinite;
+}
 
+@keyframes topbarShine {
+  0% {
+    left: -30%;
+  }
+
+  25% {
+    left: 130%;
+  }
+
+  100% {
+    left: 130%;
+  }
+}
 @media (max-width: 680px) {
   .driver-slide {
     overflow-y: auto;
