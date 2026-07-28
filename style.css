@@ -497,20 +497,21 @@ filter: drop-shadow(0 0 12px rgba(255, 200, 70, 0.45));
 
 .driver-photo-shine {
   position: absolute;
-  top: -45%;
-  left: -55%;
-  z-index: 3;
-  width: 24%;
-  height: 190%;
+  top: -40%;
+  left: -60%;
+  width: 22%;
+  height: 200%;
   pointer-events: none;
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.24),
+    rgba(255,255,255,.45),
     transparent
   );
-  transform: rotate(22deg);
-  animation: driverShine 6s ease-in-out infinite;
+  transform: rotate(24deg);
+  opacity: 0;
+  animation: driverShine 5.5s infinite;
+
 }
 
 .driver-info {
@@ -661,21 +662,26 @@ filter: drop-shadow(0 0 12px rgba(255, 200, 70, 0.45));
 }
 
 @keyframes driverShine {
-  0%,
-  65% {
-    left: -55%;
+
+  0% {
+    left: -60%;
     opacity: 0;
   }
 
-  72% {
-    opacity: 1;
+  12% {
+    opacity: .9;
   }
 
-  90%,
+  35% {
+    left: 140%;
+    opacity: 0;
+  }
+
   100% {
-    left: 135%;
+    left: 140%;
     opacity: 0;
   }
+
 }
 
 @keyframes driverLine {
