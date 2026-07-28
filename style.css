@@ -416,7 +416,7 @@ p {
 .driver-layout {
   width: min(1180px, 90vw);
   margin: auto;
-  display: none;
+  display: grid;
   grid-template-columns: 1.15fr minmax(260px, 360px);
   gap: 70px;
   align-items: center;
@@ -738,7 +738,7 @@ bottom: auto;
   width: 100%;
   margin: 0;
   padding: 0;
-  display: none;
+  display: grid;
   grid-template-columns: minmax(280px, 390px) minmax(430px, 1fr);
   gap: clamp(55px, 6vw, 95px);
   align-items: center;
