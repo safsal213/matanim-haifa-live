@@ -463,6 +463,8 @@ p {
 .driver-photo {
   display: block;
   object-fit: cover;
+  transform: scale(1.18);
+transition: transform .5s ease;
 }
 
 .driver-photo-placeholder {
