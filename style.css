@@ -55,7 +55,7 @@ position: fixed;
 }
 
 .statusbar {
-  bottom: 0;
+  bottom: 46px;
   height: 42px;
   padding: 0 24px;
   border-top: 1px solid var(--border);
@@ -80,7 +80,7 @@ position: fixed;
 
 .slideshow {
   position: fixed;
-  inset: 66px 0 42px;
+  inset: 66px 0 88px;
 }
 
 .slide {
@@ -976,5 +976,103 @@ display: inline-block;
 
   .slide-timer span {
     font-size: 15px;
+  }
+}
+
+
+/* פס חדשות רץ בתחתית המסך */
+.news-ticker {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 22;
+  height: 46px;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(5, 16, 29, 0.96);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.news-ticker-label {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
+  color: #08131f;
+  background: linear-gradient(135deg, #ffbf3f, #ff9f1c);
+  font-size: clamp(16px, 1.35vw, 21px);
+  font-weight: 900;
+  white-space: nowrap;
+  box-shadow: -10px 0 22px rgba(0, 0, 0, 0.28);
+}
+
+.news-ticker-window {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  direction: ltr;
+}
+
+.news-ticker-track {
+  --ticker-duration: 32s;
+  width: max-content;
+  display: flex;
+  align-items: center;
+  will-change: transform;
+  animation: newsTickerScroll var(--ticker-duration) linear infinite;
+}
+
+.news-ticker-group {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding-inline: 28px;
+  white-space: nowrap;
+}
+
+.news-ticker-item {
+  color: #f4f8fb;
+  font-size: clamp(17px, 1.55vw, 24px);
+  font-weight: 700;
+  text-shadow: 0 2px 7px rgba(0, 0, 0, 0.38);
+}
+
+.news-ticker-separator {
+  color: #67c7ff;
+  font-size: 12px;
+  filter: drop-shadow(0 0 5px rgba(103, 199, 255, 0.55));
+}
+
+@keyframes newsTickerScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 700px) {
+  .news-ticker-label {
+    padding: 0 12px;
+  }
+
+  .news-ticker-group {
+    gap: 20px;
+    padding-inline: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .news-ticker-track {
+    animation-duration: calc(var(--ticker-duration) * 1.8);
   }
 }

@@ -13,6 +13,7 @@ const slideTimerDisplay = document.getElementById("slideTimerDisplay");
 const slideTimerValue = document.getElementById("slideTimerValue");
 const connectionStatus = document.getElementById("connectionStatus");
 const lastUpdated = document.getElementById("lastUpdated");
+const newsTickerTrack = document.getElementById("newsTickerTrack");
 
 function escapeHtml(value = "") {
   return String(value)
@@ -26,6 +27,44 @@ function escapeHtml(value = "") {
 function imageMarkup(url, alt) {
   if (!url) return "";
   return `<img class="hero-image" src="${escapeHtml(url)}" alt="${escapeHtml(alt)}">`;
+}
+
+
+function normalizeNewsItems(settings = {}) {
+  const rawNews = settings.news ?? settings.newsTicker ?? settings.ticker ?? "";
+
+  if (Array.isArray(rawNews)) {
+    return rawNews
+      .map(item => String(item).trim())
+      .filter(Boolean);
+  }
+
+  return String(rawNews)
+    .split("|")
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
+function renderNewsTicker(data) {
+  if (!newsTickerTrack) return;
+
+  const items = normalizeNewsItems(data.settings || {});
+  const activeItems = items.length
+    ? items
+    : ["ברוכים הבאים למטענים חיפה LIVE"];
+
+  const groupMarkup = activeItems
+    .map(item => `<span class="news-ticker-item" dir="rtl">${escapeHtml(item)}</span>`)
+    .join('<span class="news-ticker-separator" aria-hidden="true">◆</span>');
+
+  newsTickerTrack.innerHTML = `
+    <div class="news-ticker-group">${groupMarkup}</div>
+    <div class="news-ticker-group" aria-hidden="true">${groupMarkup}</div>
+  `;
+
+  const totalCharacters = activeItems.join(" ").length;
+  const durationSeconds = Math.max(22, Math.min(75, totalCharacters * 0.32));
+  newsTickerTrack.style.setProperty("--ticker-duration", `${durationSeconds}s`);
 }
 
 function buildSlides(data) {
@@ -184,6 +223,7 @@ function render(data) {
   currentSlide = 0;
 
   slideshow.innerHTML = buildSlides(data).join("");
+  renderNewsTicker(data);
   updateCounter();
   updateLastUpdated(data.updatedAt);
   if (introFinished) {
