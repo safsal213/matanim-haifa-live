@@ -394,12 +394,15 @@ p {
 
 .driver-background-shape {
   position: absolute;
-  left: -10vw;
-  width: 42vw;
-  height: 42vw;
-  border: 2px solid rgba(255, 181, 46, 0.1);
+  left: -7vw;
+  top: 50%;
+  width: 30vw;
+  height: 30vw;
+  transform: translateY(-50%);
+  border: 2px solid rgba(255, 181, 46, 0.08);
   border-radius: 50%;
   animation: driverShape 12s linear infinite;
+
 }
 
 .driver-heading {
@@ -411,13 +414,14 @@ p {
 }
 
 .driver-layout {
-  width: min(1120px, 92vw);
+  width: min(1180px, 90vw);
   margin: auto;
   display: grid;
-  grid-template-columns: minmax(280px, 430px) 1fr;
-  gap: 60px;
+  grid-template-columns: 1.15fr minmax(260px, 360px);
+  gap: 70px;
   align-items: center;
   text-align: right;
+}
 }
 
 .driver-photo-wrap {
@@ -428,12 +432,13 @@ p {
 .driver-photo,
 .driver-photo-placeholder {
   width: 100%;
+  max-height: 500px;
   aspect-ratio: 4 / 5;
   border: 3px solid rgba(255, 255, 255, 0.2);
-  border-radius: 30px;
+  border-radius: 28px;
   box-shadow:
-    0 28px 80px rgba(0, 0, 0, 0.45),
-    0 0 35px rgba(255, 181, 46, 0.12);
+    0 24px 65px rgba(0, 0, 0, 0.42),
+    0 0 30px rgba(255, 181, 46, 0.1);
 }
 
 .driver-photo {
@@ -452,13 +457,13 @@ p {
       transparent 55%
     ),
     rgba(255, 255, 255, 0.06);
-  font-size: clamp(90px, 10vw, 160px);
+  font-size: clamp(120px, 12vw, 190px);
 }
 
 .driver-medal {
   position: absolute;
-  left: -22px;
-  bottom: -22px;
+  left: 18px;
+bottom: 18px;
   width: 88px;
   height: 88px;
   display: flex;
