@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a1a2f" />
+  <title>מטענים חיפה LIVE</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">🚂 מטענים חיפה LIVE</div>
+    <div id="slideCounter" class="slide-counter">1/8</div>
+  </header>
+
+  <main id="slideshow" class="slideshow" aria-live="polite"></main>
+
+  <footer class="statusbar">
+    <span id="connectionStatus">בודק חיבור...</span>
+    <span id="lastUpdated">עודכן לאחרונה: --</span>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
