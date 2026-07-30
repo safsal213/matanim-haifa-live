@@ -180,6 +180,7 @@ function renderBirthdaysSlide(data) {
       `)
       .join("");
 
+    launchBirthdayConfetti();
     return `
       <section class="slide birthday-slide birthday-today-slide">
         <div class="slide-inner">
@@ -233,6 +234,9 @@ function renderBirthdaysSlide(data) {
     </section>
   `;
 }
+
+
+function launchBirthdayConfetti(){for(let i=0;i<80;i++){const e=document.createElement("div");e.className="birthday-confetti";e.style.left=Math.random()*100+"vw";e.style.animationDelay=Math.random()*2+"s";e.style.animationDuration=(4+Math.random()*3)+"s";document.body.appendChild(e);setTimeout(()=>e.remove(),8000);}}
 
 function buildSlides(data) {
   const s = data.settings || {};

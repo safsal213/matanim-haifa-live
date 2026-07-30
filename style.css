@@ -1077,41 +1077,4 @@ display: inline-block;
   }
 }
 
-
-/* ===== Birthday cards ===== */
-.birthday-list{
-display:flex;
-flex-direction:column;
-gap:16px;
-margin-top:20px;
-}
-.birthday-card{
-display:flex;
-align-items:center;
-justify-content:space-between;
-padding:18px 22px;
-border-radius:18px;
-background:rgba(255,255,255,.08);
-border:1px solid rgba(255,255,255,.15);
-backdrop-filter:blur(8px);
-}
-.birthday-card-icon{font-size:42px;margin-left:16px}
-.birthday-card-details{flex:1}
-.birthday-card-name{font-size:30px;font-weight:700}
-.birthday-card-date{font-size:22px;opacity:.85;margin-top:4px}
-.birthday-card-countdown{
-font-size:24px;
-font-weight:700;
-color:#ffd54a;
-}
-.birthday-today-list{
-display:flex;
-flex-direction:column;
-gap:18px;
-margin:24px 0;
-}
-.birthday-today-name{
-font-size:38px;
-font-weight:800;
-color:#ffd54a;
-}
+.birthday-confetti{position:fixed;top:-20px;width:10px;height:16px;background:#ffd54f;pointer-events:none;z-index:9999;animation:confettiFall linear forwards}.birthday-confetti:nth-child(3n){background:#42a5f5}.birthday-confetti:nth-child(4n){background:#ef5350}.birthday-confetti:nth-child(5n){background:#66bb6a}@keyframes confettiFall{from{transform:translateY(-20px) rotate(0)}to{transform:translateY(110vh) rotate(720deg)}}
