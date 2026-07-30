@@ -1591,9 +1591,12 @@ box-shadow:0 6px 18px rgba(255,193,7,.4);
 .smile-video{
   width:100%;
   height:100%;
+  max-width:100%;
+  max-height:100%;
   display:block;
   opacity:0;
-  object-position:center center;
+  object-fit:contain !important;
+  object-position:center center !important;
   background:#000;
   transition:opacity .35s ease;
 }
@@ -1604,17 +1607,17 @@ box-shadow:0 6px 18px rgba(255,193,7,.4);
 
 /* סרטון אופקי ממלא את המסגרת */
 .smile-video.is-landscape{
-  object-fit:cover;
+  object-fit:cover !important;
 }
 
 /* סרטון אנכי נשאר שלם ללא חיתוך */
 .smile-video.is-portrait{
-  object-fit:contain;
+  object-fit:contain !important;
 }
 
 /* סרטון כמעט ריבועי — נשאר שלם */
 .smile-video.is-square{
-  object-fit:contain;
+  object-fit:contain !important;
 }
 
 .smile-media-shell.has-error{

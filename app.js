@@ -505,22 +505,30 @@ function startAnnouncementRotation(slide) {
 
 
 function setSmileVideoFit(video) {
-  if (!video || !video.videoWidth || !video.videoHeight) return;
+  if (!video) return;
 
-  const ratio = video.videoWidth / video.videoHeight;
-  const isPortrait = ratio < 0.9;
-  const isNearlySquare = ratio >= 0.9 && ratio <= 1.18;
+  // ברירת המחדל היא contain, כדי שסרטון אנכי לעולם לא ייחתך.
+  let fit = "contain";
 
-  video.classList.remove("is-portrait", "is-landscape", "is-square");
+  if (video.videoWidth && video.videoHeight) {
+    const ratio = video.videoWidth / video.videoHeight;
+    const isLandscape = ratio > 1.18;
 
-  if (isPortrait) {
-    video.classList.add("is-portrait");
-  } else if (isNearlySquare) {
-    video.classList.add("is-square");
-  } else {
-    video.classList.add("is-landscape");
+    video.classList.remove("is-portrait", "is-landscape", "is-square");
+
+    if (isLandscape) {
+      video.classList.add("is-landscape");
+      fit = "cover";
+    } else if (ratio < 0.9) {
+      video.classList.add("is-portrait");
+    } else {
+      video.classList.add("is-square");
+    }
   }
 
+  // Inline style גובר על כל כלל CSS ישן או מטמון בדפדפן.
+  video.style.setProperty("object-fit", fit, "important");
+  video.style.setProperty("object-position", "center center", "important");
   video.classList.add("is-ready");
 }
 
@@ -547,8 +555,10 @@ function renderSmileContent(value){
     }
 
     return `<div class="smile-media-shell">
-      <video class="smile-video" muted loop playsinline preload="auto"
+      <video class="smile-video is-portrait" muted loop playsinline preload="metadata"
+        style="object-fit:contain !important; object-position:center center !important;"
         onloadedmetadata="setSmileVideoFit(this)"
+        oncanplay="setSmileVideoFit(this)"
         onerror="handleSmileVideoError(this)">
         <source src="${escapeHtml(v)}">
       </video>
