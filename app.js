@@ -992,11 +992,7 @@ async function refreshData() {
   } catch (error) {
     const cached = loadLocal();
     if (cached) {
-      // אם כבר מוצגת מצגת, אל תאפס אותה כל שתי דקות.
-      if (!window.__offlineCacheLoaded) {
-        render(cached);
-        window.__offlineCacheLoaded = true;
-      }
+      render(cached);
       setConnectionState(false, true);
       console.warn("מציג מידע שמור:", error);
       return;
