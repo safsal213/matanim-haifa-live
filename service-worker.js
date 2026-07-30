@@ -1,4 +1,4 @@
-const CACHE_NAME = "matanim-haifa-live-v35";
+const CACHE_NAME = "matanim-haifa-live-v37";
 const APP_FILES = [
   "./",
   "./index.html",

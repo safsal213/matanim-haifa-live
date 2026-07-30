@@ -15,7 +15,10 @@
     "slideSeconds": 10,
     "news1": "☕ מי שמכין קפה שישטוף אחריו",
     "news2": "🚂 נסיעה בטוחה ומשמרת טובה לכולם",
-    "news3": "📢 תרגיל בטיחות מחר בשעה 09:00"
+    "news3": "📢 תרגיל בטיחות מחר בשעה 09:00",
+    "announcementType": "ניקיון",
+    "announcementTitle": "שימו לב",
+    "announcementUpdated": "היום 17:42"
   },
   "store": [
     {

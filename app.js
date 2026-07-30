@@ -184,8 +184,14 @@ function birthdayCountdownText(daysUntil) {
 }
 
 function renderBirthdaysSlide(data) {
-  const upcoming = getUpcomingBirthdays(data.birthdaysList || [], 5);
-  const celebratingToday = upcoming.filter(item => item.daysUntil === 0);
+  // טוען את כל החוגגים של היום כדי שאף שם לא ייחתך בגלל מגבלת
+  // חמשת ימי ההולדת הקרובים. רק כשאין יום הולדת היום מציגים עד 5 קרובים.
+  const allBirthdays = getUpcomingBirthdays(
+    data.birthdaysList || [],
+    Math.max((data.birthdaysList || []).length, 5)
+  );
+  const celebratingToday = allBirthdays.filter(item => item.daysUntil === 0);
+  const upcoming = allBirthdays.slice(0, 5);
 
   if (celebratingToday.length) {
     const namesMarkup = celebratingToday
@@ -213,14 +219,16 @@ function renderBirthdaysSlide(data) {
           <div class="birthday-celebration-badge">🎉 יום הולדת היום 🎉</div>
           <div class="birthday-cake" aria-hidden="true">🎂</div>
 
-          <h2 class="birthday-celebration-title">מזל טוב!</h2>
+          <h2 class="birthday-celebration-title">${celebratingToday.length > 1 ? "מזל טוב לכולם!" : "מזל טוב!"}</h2>
 
           <div class="birthday-today-list">
             ${namesMarkup}
           </div>
 
           <p class="birthday-celebration-message">
-            מאחלים לכם בריאות, שמחה, הצלחה והמון רגעים טובים!
+            ${celebratingToday.length > 1
+              ? "מאחלים לכם בריאות, שמחה, הצלחה והמון רגעים טובים!"
+              : "מאחלים לך בריאות, שמחה, הצלחה והמון רגעים טובים!"}
           </p>
         </div>
       </section>
@@ -301,6 +309,68 @@ function activateSlideEffects(slide) {
   }
 }
 
+
+
+function getAnnouncementTheme(typeValue = "") {
+  const normalized = String(typeValue || "").trim().toLowerCase();
+
+  const themes = {
+    "בטיחות": { key: "safety", label: "בטיחות", icon: "🦺" },
+    "safety": { key: "safety", label: "בטיחות", icon: "🦺" },
+    "ניקיון": { key: "cleaning", label: "ניקיון", icon: "🧹" },
+    "cleaning": { key: "cleaning", label: "ניקיון", icon: "🧹" },
+    "תפעול": { key: "operations", label: "תפעול", icon: "🚂" },
+    "operations": { key: "operations", label: "תפעול", icon: "🚂" },
+    "עדכון": { key: "update", label: "עדכון", icon: "🔵" },
+    "update": { key: "update", label: "עדכון", icon: "🔵" },
+    "מידע": { key: "info", label: "מידע", icon: "ℹ️" },
+    "info": { key: "info", label: "מידע", icon: "ℹ️" },
+    "תזכורת": { key: "reminder", label: "תזכורת", icon: "🔔" },
+    "reminder": { key: "reminder", label: "תזכורת", icon: "🔔" },
+    "זהירות": { key: "warning", label: "זהירות", icon: "⚠️" },
+    "warning": { key: "warning", label: "זהירות", icon: "⚠️" },
+    "דחוף": { key: "urgent", label: "דחוף", icon: "🚨" },
+    "urgent": { key: "urgent", label: "דחוף", icon: "🚨" }
+  };
+
+  return themes[normalized] || { key: "general", label: "הודעה", icon: "📢" };
+}
+
+function renderAnnouncementSlide(settings = {}) {
+  const theme = getAnnouncementTheme(
+    settings.announcementType || settings.announcementCategory || ""
+  );
+  const title = String(settings.announcementTitle || "שימו לב").trim();
+  const message = String(
+    settings.announcement || "אין הודעות חדשות כרגע"
+  ).trim();
+  const updated = String(
+    settings.announcementUpdated || settings.announcementTime || ""
+  ).trim();
+
+  return `
+    <section class="slide announcement-slide announcement-${theme.key}">
+      <div class="slide-inner announcement-shell">
+        <div class="announcement-topline">
+          <div class="announcement-category">
+            <span class="announcement-category-icon" aria-hidden="true">${theme.icon}</span>
+            <span>${escapeHtml(theme.label)}</span>
+          </div>
+          ${updated ? `<div class="announcement-updated">עודכן: ${escapeHtml(updated)}</div>` : ""}
+        </div>
+
+        <div class="announcement-card">
+          <div class="announcement-main-icon" aria-hidden="true">${theme.icon}</div>
+          <div class="announcement-content">
+            <div class="kicker">📢 הודעות החדר</div>
+            <h2>${escapeHtml(title)}</h2>
+            <p>${escapeHtml(message)}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
 
 function buildSlides(data) {
   const s = data.settings || {};
@@ -427,15 +497,7 @@ function buildSlides(data) {
         </div>
       </section>
     `,
-    `
-      <section class="slide">
-        <div class="slide-inner">
-          <div class="kicker">📢 הודעות החדר</div>
-          <h2>שימו לב</h2>
-          <p>${escapeHtml(s.announcement || "אין הודעות חדשות כרגע")}</p>
-        </div>
-      </section>
-    `,
+    renderAnnouncementSlide(s),
     `
       <section class="slide">
         <div class="slide-inner">
