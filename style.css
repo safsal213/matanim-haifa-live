@@ -1572,47 +1572,85 @@ box-shadow:0 6px 18px rgba(255,193,7,.4);
 }
 
 
-
-/* פינת החיוך – טקסט, תמונה או סרטון ללא קול */
-.smile-slide-inner {
-  width: min(1180px, 94vw);
+/* פינת החיוך — התאמה חכמה לסרטון אנכי/אופקי */
+.smile-media-shell{
+  width:min(100%, 1180px);
+  height:clamp(360px, 62vh, 690px);
+  margin:18px auto 0;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(39, 119, 180, .20), transparent 58%),
+    #02070d;
+  border:1px solid rgba(116, 202, 255, .22);
+  box-shadow:0 16px 40px rgba(0,0,0,.40), inset 0 0 35px rgba(48,137,198,.08);
 }
 
-.smile-media-frame {
-  width: min(1100px, 92vw);
-  height: min(62vh, 650px);
-  margin: 18px auto 0;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  border-radius: 26px;
-  background: rgba(0, 8, 20, 0.74);
-  border: 1px solid rgba(118, 200, 255, 0.28);
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42), 0 0 30px rgba(42, 153, 255, 0.12);
+.smile-video{
+  width:100%;
+  height:100%;
+  display:block;
+  opacity:0;
+  object-position:center center;
+  background:#000;
+  transition:opacity .35s ease;
 }
 
-.smile-video,
-.smile-image {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: contain;
-  background: #000;
+.smile-video.is-ready{
+  opacity:1;
 }
 
-.smile-text {
-  max-width: 1050px;
-  margin: 36px auto 0;
-  font-size: clamp(34px, 4.4vw, 72px);
-  line-height: 1.35;
-  font-weight: 800;
-  text-align: center;
-  white-space: pre-line;
+/* סרטון אופקי ממלא את המסגרת */
+.smile-video.is-landscape{
+  object-fit:cover;
 }
 
-@media (max-width: 900px) {
-  .smile-media-frame {
-    height: min(58vh, 560px);
-    border-radius: 20px;
+/* סרטון אנכי נשאר שלם ללא חיתוך */
+.smile-video.is-portrait{
+  object-fit:contain;
+}
+
+/* סרטון כמעט ריבועי — נשאר שלם */
+.smile-video.is-square{
+  object-fit:contain;
+}
+
+.smile-media-shell.has-error{
+  background:linear-gradient(145deg, rgba(8,27,45,.96), rgba(3,12,21,.98));
+}
+
+.smile-video-error{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  color:#eef8ff;
+  text-align:center;
+  font-size:clamp(22px, 2.3vw, 38px);
+}
+
+.smile-video-error-icon{
+  font-size:clamp(58px, 7vw, 100px);
+  margin-bottom:8px;
+}
+
+.smile-video-error span{
+  color:rgba(235,247,255,.72);
+  font-size:.72em;
+}
+
+.smile-image{
+  max-width:100%;
+  max-height:65vh;
+  border-radius:18px;
+  object-fit:contain;
+}
+
+@media (max-width:900px){
+  .smile-media-shell{
+    height:clamp(300px, 58vh, 560px);
   }
 }

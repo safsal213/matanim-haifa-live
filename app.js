@@ -305,23 +305,22 @@ function launchBirthdayConfetti() {
 function activateSlideEffects(slide) {
   stopAnnouncementRotation();
 
+  document.querySelectorAll(".smile-video").forEach(video => {
+    video.pause();
+    try { video.currentTime = 0; } catch (_) {}
+  });
+
   if (slide?.classList.contains("birthday-today-slide")) {
     launchBirthdayConfetti();
   } else {
     clearBirthdayEffects();
   }
 
-  // סרטוני פינת החיוך מתנגנים רק כאשר השקופית שלהם פעילה.
-  document.querySelectorAll(".smile-video").forEach(video => {
-    if (slide && slide.contains(video)) {
-      video.currentTime = 0;
-      const playPromise = video.play();
-      if (playPromise?.catch) playPromise.catch(() => {});
-    } else {
-      video.pause();
-      video.currentTime = 0;
-    }
-  });
+  const smileVideo = slide?.querySelector(".smile-video");
+  if (smileVideo) {
+    smileVideo.muted = true;
+    smileVideo.play().catch(() => {});
+  }
 
   startAnnouncementRotation(slide);
 }
@@ -505,48 +504,60 @@ function startAnnouncementRotation(slide) {
 }
 
 
-function getSmileMedia(value) {
-  const raw = String(value || "").trim();
-  if (!raw) return { type: "empty", src: "", text: "" };
+function setSmileVideoFit(video) {
+  if (!video || !video.videoWidth || !video.videoHeight) return;
 
-  const isRemote = /^(https?:)?\/\//i.test(raw) || /^data:/i.test(raw);
-  const cleanPath = raw.replace(/^\.\//, "");
+  const ratio = video.videoWidth / video.videoHeight;
+  const isPortrait = ratio < 0.9;
+  const isNearlySquare = ratio >= 0.9 && ratio <= 1.18;
 
-  if (/\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(raw)) {
-    const src = isRemote || cleanPath.includes("/") ? raw : `videos/${cleanPath}`;
-    return { type: "video", src, text: "" };
+  video.classList.remove("is-portrait", "is-landscape", "is-square");
+
+  if (isPortrait) {
+    video.classList.add("is-portrait");
+  } else if (isNearlySquare) {
+    video.classList.add("is-square");
+  } else {
+    video.classList.add("is-landscape");
   }
 
-  if (/\.(png|jpe?g|webp|gif)(?:[?#].*)?$/i.test(raw)) {
-    const src = isRemote || cleanPath.includes("/") ? raw : `images/${cleanPath}`;
-    return { type: "image", src, text: "" };
-  }
-
-  return { type: "text", src: "", text: raw };
+  video.classList.add("is-ready");
 }
 
-function renderSmileContent(value) {
-  const media = getSmileMedia(value);
+function handleSmileVideoError(video) {
+  const shell = video?.closest(".smile-media-shell");
+  if (!shell) return;
 
-  if (media.type === "video") {
-    return `<div class="smile-media-frame">
-      <video class="smile-video" muted loop playsinline preload="metadata" aria-label="סרטון פינת החיוך">
-        <source src="${escapeHtml(media.src)}">
+  shell.classList.add("has-error");
+  shell.innerHTML = `
+    <div class="smile-video-error" role="status">
+      <div class="smile-video-error-icon">😄</div>
+      <strong>לא נמצא סרטון</strong>
+      <span>לפינת החיוך</span>
+    </div>`;
+}
+
+function renderSmileContent(value){
+  let v=String(value||"").trim();
+  if(!v) return "";
+
+  if(/\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(v)){
+    if (!/^(?:https?:|data:|blob:|\/)/i.test(v) && !v.includes("/")) {
+      v = `videos/${v}`;
+    }
+
+    return `<div class="smile-media-shell">
+      <video class="smile-video" muted loop playsinline preload="auto"
+        onloadedmetadata="setSmileVideoFit(this)"
+        onerror="handleSmileVideoError(this)">
+        <source src="${escapeHtml(v)}">
       </video>
     </div>`;
   }
-
-  if (media.type === "image") {
-    return `<div class="smile-media-frame">
-      <img class="smile-image" src="${escapeHtml(media.src)}" alt="פינת החיוך">
-    </div>`;
+  if(/\.(png|jpe?g|webp|gif)(?:[?#].*)?$/i.test(v)){
+    return `<img class="smile-image" src="${escapeHtml(v)}" alt="פינת החיוך">`;
   }
-
-  if (media.type === "text") {
-    return `<p class="smile-text">${escapeHtml(media.text)}</p>`;
-  }
-
-  return `<p class="empty">אין תוכן בפינת החיוך כרגע</p>`;
+  return `<p>${escapeHtml(v)}</p>`;
 }
 
 
@@ -667,10 +678,10 @@ function buildSlides(data) {
       </section>
     `,
     `
-      <section class="slide smile-slide">
-        <div class="slide-inner smile-slide-inner">
+      <section class="slide">
+        <div class="slide-inner">
           <div class="kicker">😂 פינת החיוך</div>
-          <h2 class="accent">${getSmileMedia(s.smileCorner).type === "video" ? "סרטון השבוע" : getSmileMedia(s.smileCorner).type === "image" ? "תמונת השבוע" : "משפט השבוע"}</h2>
+          <h2 class="accent">משפט השבוע</h2>
           ${renderSmileContent(s.smileCorner)}
         </div>
       </section>
