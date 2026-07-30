@@ -77,6 +77,163 @@ function renderNewsTicker(data) {
   newsTickerTrack.style.setProperty("--ticker-duration", `${durationSeconds}s`);
 }
 
+
+function parseBirthdayDate(value) {
+  const match = String(value || "").trim().match(/^(\d{1,2})[\/.\-](\d{1,2})$/);
+
+  if (!match) {
+    return null;
+  }
+
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+
+  if (
+    !Number.isInteger(day) ||
+    !Number.isInteger(month) ||
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31
+  ) {
+    return null;
+  }
+
+  return { day, month };
+}
+
+function getUpcomingBirthdays(items = [], limit = 5) {
+  const today = new Date();
+  const todayStart = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+
+  return items
+    .map(item => {
+      const parsed = parseBirthdayDate(item.date);
+
+      if (!parsed || !String(item.name || "").trim()) {
+        return null;
+      }
+
+      let nextDate = new Date(
+        todayStart.getFullYear(),
+        parsed.month - 1,
+        parsed.day
+      );
+
+      // מונע קבלה של תאריכים לא חוקיים כמו 31/02
+      if (
+        nextDate.getDate() !== parsed.day ||
+        nextDate.getMonth() !== parsed.month - 1
+      ) {
+        return null;
+      }
+
+      if (nextDate < todayStart) {
+        nextDate = new Date(
+          todayStart.getFullYear() + 1,
+          parsed.month - 1,
+          parsed.day
+        );
+      }
+
+      const daysUntil = Math.round(
+        (nextDate.getTime() - todayStart.getTime()) / 86400000
+      );
+
+      return {
+        name: String(item.name).trim(),
+        date: String(item.date).trim(),
+        daysUntil
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => {
+      if (a.daysUntil !== b.daysUntil) {
+        return a.daysUntil - b.daysUntil;
+      }
+
+      return a.name.localeCompare(b.name, "he");
+    })
+    .slice(0, limit);
+}
+
+function birthdayCountdownText(daysUntil) {
+  if (daysUntil === 0) return "היום 🎉";
+  if (daysUntil === 1) return "מחר";
+  return `בעוד ${daysUntil} ימים`;
+}
+
+function renderBirthdaysSlide(data) {
+  const upcoming = getUpcomingBirthdays(data.birthdaysList || [], 5);
+  const celebratingToday = upcoming.filter(item => item.daysUntil === 0);
+
+  if (celebratingToday.length) {
+    const namesMarkup = celebratingToday
+      .map(item => `
+        <div class="birthday-today-name">
+          🎂 ${escapeHtml(item.name)} 🎂
+        </div>
+      `)
+      .join("");
+
+    return `
+      <section class="slide birthday-slide birthday-today-slide">
+        <div class="slide-inner">
+          <div class="kicker">🎉 יום הולדת היום</div>
+          <h2 class="accent">מזל טוב!</h2>
+          <div class="birthday-today-list">
+            ${namesMarkup}
+          </div>
+          <p>מאחלים לכם בריאות, שמחה והצלחה!</p>
+        </div>
+      </section>
+    `;
+  }
+
+  if (!upcoming.length) {
+    return `
+      <section class="slide birthday-slide">
+        <div class="slide-inner">
+          <div class="kicker">🎂 ימי הולדת</div>
+          <h2 class="accent">ימי ההולדת הקרובים</h2>
+          <p class="empty">לא נמצאו ימי הולדת ברשימה</p>
+        </div>
+      </section>
+    `;
+  }
+
+  const cardsMarkup = upcoming
+    .map(item => `
+      <div class="birthday-card">
+        <div class="birthday-card-icon">🎂</div>
+        <div class="birthday-card-details">
+          <div class="birthday-card-name">${escapeHtml(item.name)}</div>
+          <div class="birthday-card-date">${escapeHtml(item.date)}</div>
+        </div>
+        <div class="birthday-card-countdown">
+          ${escapeHtml(birthdayCountdownText(item.daysUntil))}
+        </div>
+      </div>
+    `)
+    .join("");
+
+  return `
+    <section class="slide birthday-slide">
+      <div class="slide-inner">
+        <div class="kicker">🎂 ימי הולדת</div>
+        <h2 class="accent">ימי ההולדת הקרובים</h2>
+        <div class="birthday-list">
+          ${cardsMarkup}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 function buildSlides(data) {
   const s = data.settings || {};
   const storeItems = (data.store || []).filter(item => item.active !== false);
@@ -180,15 +337,7 @@ function buildSlides(data) {
         </div>
       </section>
     `,
-    `
-      <section class="slide">
-        <div class="slide-inner">
-          <div class="kicker">🎂 ימי הולדת</div>
-          <h2 class="accent">מזל טוב!</h2>
-          <p>${escapeHtml(s.birthdays || "אין חוגגים חדשים כרגע")}</p>
-        </div>
-      </section>
-    `,
+    renderBirthdaysSlide(data),
     `
       <section class="slide">
         <div class="slide-inner">
