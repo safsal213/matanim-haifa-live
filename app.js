@@ -523,7 +523,7 @@ function renderSmileContent(value){
   if (type === "video") {
     return `
       <div class="smile-media-frame smile-media-frame--loading">
-        <video class="smile-video" muted loop playsinline preload="metadata">
+        <video class="smile-video" muted playsinline preload="metadata">
           <source src="${escapeHtml(v)}">
         </video>
         <div class="smile-video-error" hidden>😄 לא ניתן לטעון את הסרטון</div>
@@ -815,11 +815,84 @@ function startSlideCountdown() {
   }, 100);
 }
 
-function restartSlideTimer() {
-  if (slideTimer) clearTimeout(slideTimer);
+function startSmileVideoCountdown(video) {
   if (countdownTimer) clearInterval(countdownTimer);
 
+  const updateFromVideo = () => {
+    const duration = Number(video.duration);
+    const currentTime = Number(video.currentTime) || 0;
+
+    if (!Number.isFinite(duration) || duration <= 0) {
+      updateSlideCountdown(0, 0);
+      return;
+    }
+
+    const remaining = Math.max(0, duration - currentTime);
+    const progress = remaining / duration;
+    updateSlideCountdown(remaining, progress);
+  };
+
+  updateFromVideo();
+  countdownTimer = setInterval(updateFromVideo, 100);
+}
+
+function restartSlideTimer() {
+  if (slideTimer) {
+    clearTimeout(slideTimer);
+    slideTimer = null;
+  }
+
+  if (countdownTimer) {
+    clearInterval(countdownTimer);
+    countdownTimer = null;
+  }
+
   const activeSlide = document.querySelector(".slide.active");
+  const smileVideo = activeSlide?.querySelector(".smile-video");
+
+  // בפינת החיוך: סרטון נשאר עד שהוא מסתיים בפועל.
+  if (smileVideo) {
+    smileVideo.loop = false;
+    smileVideo.onended = () => {
+      if (countdownTimer) {
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+      }
+      showNextSlide();
+    };
+
+    // אם הקובץ לא נטען, לא משאירים את המצגת תקועה.
+    smileVideo.onerror = () => {
+      slideDurationSeconds = 10;
+      startSlideCountdown();
+      slideTimer = setTimeout(showNextSlide, 10000);
+    };
+
+    const beginVideoTiming = () => {
+      slideDurationSeconds = Number.isFinite(smileVideo.duration)
+        ? Math.max(1, smileVideo.duration)
+        : 0;
+      startSmileVideoCountdown(smileVideo);
+    };
+
+    if (smileVideo.readyState >= 1) {
+      beginVideoTiming();
+    } else {
+      smileVideo.addEventListener("loadedmetadata", beginVideoTiming, { once: true });
+    }
+
+    return;
+  }
+
+  // בפינת החיוך: תמונה או משפט מוצגים תמיד 10 שניות.
+  const isSmileSlide = activeSlide?.classList.contains("smile-slide");
+  if (isSmileSlide) {
+    slideDurationSeconds = 10;
+    startSlideCountdown();
+    slideTimer = setTimeout(showNextSlide, 10000);
+    return;
+  }
+
   const customSeconds = Number(activeSlide?.dataset?.slideSeconds);
   const defaultSeconds =
     Number(appData?.settings?.slideSeconds) || DEFAULT_SLIDE_SECONDS;
