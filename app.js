@@ -5,6 +5,7 @@ let appData = null;
 let currentSlide = 0;
 let slideTimer = null;
 let countdownTimer = null;
+let announcementRotationTimer = null;
 let slideDurationSeconds = DEFAULT_SLIDE_SECONDS;
 let introFinished = false;
 const slideshow = document.getElementById("slideshow");
@@ -302,11 +303,13 @@ function launchBirthdayConfetti() {
 }
 
 function activateSlideEffects(slide) {
+  stopAnnouncementRotation();
   if (slide?.classList.contains("birthday-today-slide")) {
     launchBirthdayConfetti();
   } else {
     clearBirthdayEffects();
   }
+  startAnnouncementRotation(slide);
 }
 
 
@@ -336,40 +339,155 @@ function getAnnouncementTheme(typeValue = "") {
   return themes[normalized] || { key: "general", label: "הודעה", icon: "📢" };
 }
 
-function renderAnnouncementSlide(settings = {}) {
-  const theme = getAnnouncementTheme(
-    settings.announcementType || settings.announcementCategory || ""
-  );
-  const title = String(settings.announcementTitle || "שימו לב").trim();
-  const message = String(
-    settings.announcement || "אין הודעות חדשות כרגע"
-  ).trim();
-  const updated = String(
-    settings.announcementUpdated || settings.announcementTime || ""
-  ).trim();
+function parseSheetDate(value) {
+  if (!value) return null;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+  }
+
+  const raw = String(value).trim();
+  const match = raw.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);
+  if (match) {
+    const date = new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  const parsed = new Date(raw);
+  return Number.isNaN(parsed.getTime())
+    ? null
+    : new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+}
+
+function isAnnouncementActive(value) {
+  if (value === true) return true;
+  if (value === false || value == null || value === "") return false;
+  const normalized = String(value).trim().toLowerCase();
+  return ["true", "כן", "yes", "1", "פעיל", "✓", "✔"].includes(normalized);
+}
+
+function normalizeAnnouncements(data = {}) {
+  const today = new Date();
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const list = Array.isArray(data.announcements) ? data.announcements : [];
+
+  const active = list
+    .map((item, index) => {
+      const publishDate = parseSheetDate(item.publishDate || item.date || item["תאריך פרסום"]);
+      const expiryDate = parseSheetDate(item.expiry || item.validUntil || item["תוקף"]);
+      const priorityRaw = Number(item.priority ?? item["עדיפות"]);
+
+      return {
+        type: String(item.type ?? item["סוג"] ?? "").trim(),
+        title: String(item.title ?? item["כותרת"] ?? "שימו לב").trim(),
+        content: String(item.content ?? item.message ?? item["תוכן"] ?? "").trim(),
+        publishDate,
+        publishText: String(item.publishDate ?? item.date ?? item["תאריך פרסום"] ?? "").trim(),
+        expiryDate,
+        active: isAnnouncementActive(item.active ?? item["פעיל"]),
+        priority: Number.isFinite(priorityRaw) && priorityRaw > 0 ? priorityRaw : 999,
+        index
+      };
+    })
+    .filter(item => item.active && item.content)
+    .filter(item => !item.publishDate || item.publishDate <= todayStart)
+    .filter(item => !item.expiryDate || item.expiryDate >= todayStart)
+    .sort((a, b) => a.priority - b.priority || (b.publishDate?.getTime() || 0) - (a.publishDate?.getTime() || 0) || a.index - b.index);
+
+  if (active.length) return active;
+
+  // תאימות לאחור לשדות הישנים בגיליון הגדרות.
+  const settings = data.settings || {};
+  const oldMessage = String(settings.announcement || "").trim();
+  if (!oldMessage) return [];
+
+  return [{
+    type: settings.announcementType || settings.announcementCategory || "",
+    title: settings.announcementTitle || "שימו לב",
+    content: oldMessage,
+    publishText: settings.announcementUpdated || settings.announcementTime || "",
+    priority: 1,
+    index: 0
+  }];
+}
+
+function announcementItemMarkup(item, index, total) {
+  const theme = getAnnouncementTheme(item.type);
+  const published = item.publishText
+    ? `<div class="announcement-updated">פורסם: ${escapeHtml(item.publishText)}</div>`
+    : "";
 
   return `
-    <section class="slide announcement-slide announcement-${theme.key}">
-      <div class="slide-inner announcement-shell">
-        <div class="announcement-topline">
-          <div class="announcement-category">
-            <span class="announcement-category-icon" aria-hidden="true">${theme.icon}</span>
-            <span>${escapeHtml(theme.label)}</span>
-          </div>
-          ${updated ? `<div class="announcement-updated">עודכן: ${escapeHtml(updated)}</div>` : ""}
+    <article class="announcement-item announcement-${theme.key}${index === 0 ? " is-current" : ""}" data-announcement-index="${index}">
+      <div class="announcement-topline">
+        <div class="announcement-category">
+          <span class="announcement-category-icon" aria-hidden="true">${theme.icon}</span>
+          <span>${escapeHtml(theme.label)}</span>
         </div>
-
-        <div class="announcement-card">
-          <div class="announcement-main-icon" aria-hidden="true">${theme.icon}</div>
-          <div class="announcement-content">
-            <div class="kicker">📢 הודעות החדר</div>
-            <h2>${escapeHtml(title)}</h2>
-            <p>${escapeHtml(message)}</p>
-          </div>
+        <div class="announcement-meta">
+          ${published}
+          ${total > 1 ? `<div class="announcement-position">${index + 1}/${total}</div>` : ""}
         </div>
       </div>
-    </section>
-  `;
+
+      <div class="announcement-card">
+        <div class="announcement-main-icon" aria-hidden="true">${theme.icon}</div>
+        <div class="announcement-content">
+          <div class="kicker">📢 הודעות החדר</div>
+          <h2>${escapeHtml(item.title || "שימו לב")}</h2>
+          <p>${escapeHtml(item.content)}</p>
+        </div>
+      </div>
+    </article>`;
+}
+
+function renderAnnouncementSlide(data = {}) {
+  const announcements = normalizeAnnouncements(data);
+  const items = announcements.length
+    ? announcements
+    : [{ type: "מידע", title: "אין הודעות חדשות", content: "לא קיימות כרגע הודעות פעילות.", publishText: "" }];
+
+  const secondsPerMessage = 7;
+  const slideSeconds = Math.max(10, items.length * secondsPerMessage);
+
+  return `
+    <section class="slide announcement-slide" data-slide-seconds="${slideSeconds}" data-announcement-count="${items.length}" data-announcement-seconds="${secondsPerMessage}">
+      <div class="slide-inner announcement-shell">
+        <div class="announcement-stack">
+          ${items.map((item, index) => announcementItemMarkup(item, index, items.length)).join("")}
+        </div>
+        ${items.length > 1 ? `
+          <div class="announcement-dots" aria-label="מספר ההודעה">
+            ${items.map((_, index) => `<span class="announcement-dot${index === 0 ? " is-current" : ""}" data-announcement-dot="${index}"></span>`).join("")}
+          </div>` : ""}
+      </div>
+    </section>`;
+}
+
+function stopAnnouncementRotation() {
+  if (announcementRotationTimer) {
+    clearInterval(announcementRotationTimer);
+    announcementRotationTimer = null;
+  }
+}
+
+function startAnnouncementRotation(slide) {
+  stopAnnouncementRotation();
+  if (!slide?.classList.contains("announcement-slide")) return;
+
+  const items = Array.from(slide.querySelectorAll(".announcement-item"));
+  const dots = Array.from(slide.querySelectorAll(".announcement-dot"));
+  if (items.length < 2) return;
+
+  let current = 0;
+  const seconds = Math.max(4, Number(slide.dataset.announcementSeconds) || 7);
+
+  announcementRotationTimer = setInterval(() => {
+    items[current].classList.remove("is-current");
+    dots[current]?.classList.remove("is-current");
+    current = (current + 1) % items.length;
+    items[current].classList.add("is-current");
+    dots[current]?.classList.add("is-current");
+  }, seconds * 1000);
 }
 
 function buildSlides(data) {
@@ -497,7 +615,7 @@ function buildSlides(data) {
         </div>
       </section>
     `,
-    renderAnnouncementSlide(s),
+    renderAnnouncementSlide(data),
     `
       <section class="slide">
         <div class="slide-inner">

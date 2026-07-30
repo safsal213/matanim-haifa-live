@@ -69,5 +69,34 @@
       "icon": "🍫",
       "active": true
     }
+  ],
+  "announcements": [
+    {
+      "type": "בטיחות",
+      "title": "אפוד זוהר",
+      "content": "חובה ללבוש אפוד זוהר בכל יציאה לשטח המסילות.",
+      "publishDate": "30/07/2026",
+      "active": true,
+      "priority": 1,
+      "expiry": "05/08/2026"
+    },
+    {
+      "type": "ניקיון",
+      "title": "שימו לב",
+      "content": "יש לשמור על ניקיון החדר ולהשתמש בפחים.",
+      "publishDate": "30/07/2026",
+      "active": true,
+      "priority": 2,
+      "expiry": "31/07/2026"
+    },
+    {
+      "type": "תפעול",
+      "title": "שינוי מסילה",
+      "content": "רכבת 123 תצא היום ממסילה 4 במקום מסילה 2.",
+      "publishDate": "31/07/2026",
+      "active": true,
+      "priority": 3,
+      "expiry": "31/07/2026"
+    }
   ]
 }
