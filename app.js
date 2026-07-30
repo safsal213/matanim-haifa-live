@@ -304,11 +304,25 @@ function launchBirthdayConfetti() {
 
 function activateSlideEffects(slide) {
   stopAnnouncementRotation();
+
   if (slide?.classList.contains("birthday-today-slide")) {
     launchBirthdayConfetti();
   } else {
     clearBirthdayEffects();
   }
+
+  // סרטוני פינת החיוך מתנגנים רק כאשר השקופית שלהם פעילה.
+  document.querySelectorAll(".smile-video").forEach(video => {
+    if (slide && slide.contains(video)) {
+      video.currentTime = 0;
+      const playPromise = video.play();
+      if (playPromise?.catch) playPromise.catch(() => {});
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
+  });
+
   startAnnouncementRotation(slide);
 }
 
@@ -491,18 +505,48 @@ function startAnnouncementRotation(slide) {
 }
 
 
-function renderSmileContent(value){
-  const v=String(value||"").trim();
-  if(!v) return "";
-  if(/\.(mp4|webm|ogg)$/i.test(v)){
-    return `<video class="smile-video" autoplay muted loop playsinline preload="auto">
-      <source src="${escapeHtml(v)}">
-    </video>`;
+function getSmileMedia(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return { type: "empty", src: "", text: "" };
+
+  const isRemote = /^(https?:)?\/\//i.test(raw) || /^data:/i.test(raw);
+  const cleanPath = raw.replace(/^\.\//, "");
+
+  if (/\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(raw)) {
+    const src = isRemote || cleanPath.includes("/") ? raw : `videos/${cleanPath}`;
+    return { type: "video", src, text: "" };
   }
-  if(/\.(png|jpe?g|webp|gif)$/i.test(v)){
-    return `<img class="smile-image" src="${escapeHtml(v)}" alt="פינת החיוך">`;
+
+  if (/\.(png|jpe?g|webp|gif)(?:[?#].*)?$/i.test(raw)) {
+    const src = isRemote || cleanPath.includes("/") ? raw : `images/${cleanPath}`;
+    return { type: "image", src, text: "" };
   }
-  return `<p>${escapeHtml(v)}</p>`;
+
+  return { type: "text", src: "", text: raw };
+}
+
+function renderSmileContent(value) {
+  const media = getSmileMedia(value);
+
+  if (media.type === "video") {
+    return `<div class="smile-media-frame">
+      <video class="smile-video" muted loop playsinline preload="metadata" aria-label="סרטון פינת החיוך">
+        <source src="${escapeHtml(media.src)}">
+      </video>
+    </div>`;
+  }
+
+  if (media.type === "image") {
+    return `<div class="smile-media-frame">
+      <img class="smile-image" src="${escapeHtml(media.src)}" alt="פינת החיוך">
+    </div>`;
+  }
+
+  if (media.type === "text") {
+    return `<p class="smile-text">${escapeHtml(media.text)}</p>`;
+  }
+
+  return `<p class="empty">אין תוכן בפינת החיוך כרגע</p>`;
 }
 
 
@@ -623,10 +667,10 @@ function buildSlides(data) {
       </section>
     `,
     `
-      <section class="slide">
-        <div class="slide-inner">
+      <section class="slide smile-slide">
+        <div class="slide-inner smile-slide-inner">
           <div class="kicker">😂 פינת החיוך</div>
-          <h2 class="accent">משפט השבוע</h2>
+          <h2 class="accent">${getSmileMedia(s.smileCorner).type === "video" ? "סרטון השבוע" : getSmileMedia(s.smileCorner).type === "image" ? "תמונת השבוע" : "משפט השבוע"}</h2>
           ${renderSmileContent(s.smileCorner)}
         </div>
       </section>

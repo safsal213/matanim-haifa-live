@@ -1572,17 +1572,47 @@ box-shadow:0 6px 18px rgba(255,193,7,.4);
 }
 
 
-.smile-video{
-width:100%;
-max-height:65vh;
-border-radius:18px;
-object-fit:contain;
-background:#000;
-box-shadow:0 12px 30px rgba(0,0,0,.35);
+
+/* פינת החיוך – טקסט, תמונה או סרטון ללא קול */
+.smile-slide-inner {
+  width: min(1180px, 94vw);
 }
-.smile-image{
-max-width:100%;
-max-height:65vh;
-border-radius:18px;
-object-fit:contain;
+
+.smile-media-frame {
+  width: min(1100px, 92vw);
+  height: min(62vh, 650px);
+  margin: 18px auto 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 26px;
+  background: rgba(0, 8, 20, 0.74);
+  border: 1px solid rgba(118, 200, 255, 0.28);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42), 0 0 30px rgba(42, 153, 255, 0.12);
+}
+
+.smile-video,
+.smile-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  background: #000;
+}
+
+.smile-text {
+  max-width: 1050px;
+  margin: 36px auto 0;
+  font-size: clamp(34px, 4.4vw, 72px);
+  line-height: 1.35;
+  font-weight: 800;
+  text-align: center;
+  white-space: pre-line;
+}
+
+@media (max-width: 900px) {
+  .smile-media-frame {
+    height: min(58vh, 560px);
+    border-radius: 20px;
+  }
 }
