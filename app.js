@@ -180,16 +180,32 @@ function renderBirthdaysSlide(data) {
       `)
       .join("");
 
-    launchBirthdayConfetti();
     return `
-      <section class="slide birthday-slide birthday-today-slide">
-        <div class="slide-inner">
-          <div class="kicker">🎉 יום הולדת היום</div>
-          <h2 class="accent">מזל טוב!</h2>
+      <section class="slide birthday-slide birthday-today-slide" data-slide-seconds="15">
+        <div class="birthday-celebration-glow"></div>
+
+        <div class="birthday-balloons" aria-hidden="true">
+          <span class="birthday-balloon balloon-one">🎈</span>
+          <span class="birthday-balloon balloon-two">🎈</span>
+          <span class="birthday-balloon balloon-three">🎈</span>
+          <span class="birthday-balloon balloon-four">🎈</span>
+          <span class="birthday-balloon balloon-five">🎈</span>
+          <span class="birthday-balloon balloon-six">🎈</span>
+        </div>
+
+        <div class="slide-inner birthday-celebration-content">
+          <div class="birthday-celebration-badge">🎉 יום הולדת היום 🎉</div>
+          <div class="birthday-cake" aria-hidden="true">🎂</div>
+
+          <h2 class="birthday-celebration-title">מזל טוב!</h2>
+
           <div class="birthday-today-list">
             ${namesMarkup}
           </div>
-          <p>מאחלים לכם בריאות, שמחה והצלחה!</p>
+
+          <p class="birthday-celebration-message">
+            מאחלים לכם בריאות, שמחה, הצלחה והמון רגעים טובים!
+          </p>
         </div>
       </section>
     `;
@@ -236,7 +252,39 @@ function renderBirthdaysSlide(data) {
 }
 
 
-function launchBirthdayConfetti(){for(let i=0;i<80;i++){const e=document.createElement("div");e.className="birthday-confetti";e.style.left=Math.random()*100+"vw";e.style.animationDelay=Math.random()*2+"s";e.style.animationDuration=(4+Math.random()*3)+"s";document.body.appendChild(e);setTimeout(()=>e.remove(),8000);}}
+function clearBirthdayEffects() {
+  document
+    .querySelectorAll(".birthday-confetti")
+    .forEach(element => element.remove());
+}
+
+function launchBirthdayConfetti() {
+  clearBirthdayEffects();
+
+  const shapes = ["square", "circle", "strip"];
+
+  for (let i = 0; i < 110; i++) {
+    const element = document.createElement("div");
+    element.className = `birthday-confetti birthday-confetti-${shapes[i % shapes.length]}`;
+    element.style.left = `${Math.random() * 100}vw`;
+    element.style.setProperty("--confetti-delay", `${Math.random() * 1.8}s`);
+    element.style.setProperty("--confetti-duration", `${4.8 + Math.random() * 3.2}s`);
+    element.style.setProperty("--confetti-drift", `${-120 + Math.random() * 240}px`);
+    element.style.setProperty("--confetti-spin", `${540 + Math.random() * 720}deg`);
+    document.body.appendChild(element);
+  }
+
+  setTimeout(clearBirthdayEffects, 9000);
+}
+
+function activateSlideEffects(slide) {
+  if (slide?.classList.contains("birthday-today-slide")) {
+    launchBirthdayConfetti();
+  } else {
+    clearBirthdayEffects();
+  }
+}
+
 
 function buildSlides(data) {
   const s = data.settings || {};
@@ -406,6 +454,7 @@ function showNextSlide() {
   slides[currentSlide].classList.remove("active");
   currentSlide = (currentSlide + 1) % slides.length;
   slides[currentSlide].classList.add("active");
+  activateSlideEffects(slides[currentSlide]);
   updateCounter();
   restartSlideTimer();
 }
@@ -447,8 +496,17 @@ function restartSlideTimer() {
   if (slideTimer) clearTimeout(slideTimer);
   if (countdownTimer) clearInterval(countdownTimer);
 
-  const seconds = Number(appData?.settings?.slideSeconds) || DEFAULT_SLIDE_SECONDS;
-  slideDurationSeconds = Math.max(3, seconds);
+  const activeSlide = document.querySelector(".slide.active");
+  const customSeconds = Number(activeSlide?.dataset?.slideSeconds);
+  const defaultSeconds =
+    Number(appData?.settings?.slideSeconds) || DEFAULT_SLIDE_SECONDS;
+
+  slideDurationSeconds = Math.max(
+    3,
+    Number.isFinite(customSeconds) && customSeconds > 0
+      ? customSeconds
+      : defaultSeconds
+  );
 
   startSlideCountdown();
   slideTimer = setTimeout(showNextSlide, slideDurationSeconds * 1000);
