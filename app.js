@@ -304,24 +304,12 @@ function launchBirthdayConfetti() {
 
 function activateSlideEffects(slide) {
   stopAnnouncementRotation();
-
-  document.querySelectorAll(".smile-video").forEach(video => {
-    video.pause();
-    try { video.currentTime = 0; } catch (_) {}
-  });
-
+  setSmileVideoPlayback(slide);
   if (slide?.classList.contains("birthday-today-slide")) {
     launchBirthdayConfetti();
   } else {
     clearBirthdayEffects();
   }
-
-  const smileVideo = slide?.querySelector(".smile-video");
-  if (smileVideo) {
-    smileVideo.muted = true;
-    smileVideo.play().catch(() => {});
-  }
-
   startAnnouncementRotation(slide);
 }
 
@@ -504,70 +492,105 @@ function startAnnouncementRotation(slide) {
 }
 
 
-function setSmileVideoFit(video) {
-  if (!video) return;
-
-  // ברירת המחדל היא contain, כדי שסרטון אנכי לעולם לא ייחתך.
-  let fit = "contain";
-
-  if (video.videoWidth && video.videoHeight) {
-    const ratio = video.videoWidth / video.videoHeight;
-    const isLandscape = ratio > 1.18;
-
-    video.classList.remove("is-portrait", "is-landscape", "is-square");
-
-    if (isLandscape) {
-      video.classList.add("is-landscape");
-      fit = "cover";
-    } else if (ratio < 0.9) {
-      video.classList.add("is-portrait");
-    } else {
-      video.classList.add("is-square");
-    }
-  }
-
-  // Inline style גובר על כל כלל CSS ישן או מטמון בדפדפן.
-  video.style.setProperty("object-fit", fit, "important");
-  video.style.setProperty("object-position", "center center", "important");
-  video.classList.add("is-ready");
+function getSmileContentType(value) {
+  const v = String(value || "").trim();
+  if (/\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(v)) return "video";
+  if (/\.(png|jpe?g|webp|gif)(?:[?#].*)?$/i.test(v)) return "image";
+  return "text";
 }
 
-function handleSmileVideoError(video) {
-  const shell = video?.closest(".smile-media-shell");
-  if (!shell) return;
+function getSmileTitle(settings = {}) {
+  const customTitle = String(
+    settings.smileCornerTitle ||
+    settings.smileTitle ||
+    ""
+  ).trim();
 
-  shell.classList.add("has-error");
-  shell.innerHTML = `
-    <div class="smile-video-error" role="status">
-      <div class="smile-video-error-icon">😄</div>
-      <strong>לא נמצא סרטון</strong>
-      <span>לפינת החיוך</span>
-    </div>`;
+  if (customTitle) return customTitle;
+
+  const type = getSmileContentType(settings.smileCorner);
+  if (type === "video") return "סרטון השבוע";
+  if (type === "image") return "תמונת השבוע";
+  return "משפט השבוע";
 }
 
 function renderSmileContent(value){
-  let v=String(value||"").trim();
-  if(!v) return "";
+  const v = String(value || "").trim();
+  if (!v) return `<div class="smile-empty">😄 אין תוכן בפינת החיוך כרגע</div>`;
 
-  if(/\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(v)){
-    if (!/^(?:https?:|data:|blob:|\/)/i.test(v) && !v.includes("/")) {
-      v = `videos/${v}`;
+  const type = getSmileContentType(v);
+
+  if (type === "video") {
+    return `
+      <div class="smile-media-frame smile-media-frame--loading">
+        <video class="smile-video" muted loop playsinline preload="metadata">
+          <source src="${escapeHtml(v)}">
+        </video>
+        <div class="smile-video-error" hidden>😄 לא ניתן לטעון את הסרטון</div>
+      </div>`;
+  }
+
+  if (type === "image") {
+    return `
+      <div class="smile-media-frame smile-media-frame--image">
+        <img class="smile-image" src="${escapeHtml(v)}" alt="פינת החיוך">
+      </div>`;
+  }
+
+  return `<p class="smile-text">${escapeHtml(v)}</p>`;
+}
+
+function prepareSmileVideo(video) {
+  const frame = video.closest(".smile-media-frame");
+  if (!frame) return;
+
+  const applyLayout = () => {
+    const width = Number(video.videoWidth) || 0;
+    const height = Number(video.videoHeight) || 0;
+    const ratio = height ? width / height : 0;
+
+    frame.classList.remove(
+      "smile-media-frame--loading",
+      "smile-media-frame--portrait",
+      "smile-media-frame--landscape",
+      "smile-media-frame--square"
+    );
+
+    if (!ratio || ratio < 0.9) {
+      frame.classList.add("smile-media-frame--portrait");
+    } else if (ratio > 1.15) {
+      frame.classList.add("smile-media-frame--landscape");
+    } else {
+      frame.classList.add("smile-media-frame--square");
     }
+  };
 
-    return `<div class="smile-media-shell">
-      <video class="smile-video is-portrait" muted loop playsinline preload="metadata"
-        style="object-fit:contain !important; object-position:center center !important;"
-        onloadedmetadata="setSmileVideoFit(this)"
-        oncanplay="setSmileVideoFit(this)"
-        onerror="handleSmileVideoError(this)">
-        <source src="${escapeHtml(v)}">
-      </video>
-    </div>`;
-  }
-  if(/\.(png|jpe?g|webp|gif)(?:[?#].*)?$/i.test(v)){
-    return `<img class="smile-image" src="${escapeHtml(v)}" alt="פינת החיוך">`;
-  }
-  return `<p>${escapeHtml(v)}</p>`;
+  if (video.readyState >= 1) applyLayout();
+  else video.addEventListener("loadedmetadata", applyLayout, { once: true });
+
+  video.addEventListener("error", () => {
+    frame.classList.add("smile-media-frame--error");
+    const errorBox = frame.querySelector(".smile-video-error");
+    if (errorBox) errorBox.hidden = false;
+  }, { once: true });
+}
+
+function setSmileVideoPlayback(activeSlide) {
+  document.querySelectorAll(".smile-video").forEach(video => {
+    prepareSmileVideo(video);
+    const shouldPlay = Boolean(activeSlide && activeSlide.contains(video));
+
+    if (shouldPlay) {
+      video.muted = true;
+      const playPromise = video.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(() => {});
+      }
+    } else {
+      video.pause();
+      try { video.currentTime = 0; } catch (_) {}
+    }
+  });
 }
 
 
@@ -688,10 +711,10 @@ function buildSlides(data) {
       </section>
     `,
     `
-      <section class="slide">
-        <div class="slide-inner">
+      <section class="slide smile-slide">
+        <div class="slide-inner smile-slide-inner">
           <div class="kicker">😂 פינת החיוך</div>
-          <h2 class="accent">משפט השבוע</h2>
+          <h2 class="accent smile-heading">${escapeHtml(getSmileTitle(s))}</h2>
           ${renderSmileContent(s.smileCorner)}
         </div>
       </section>
@@ -717,6 +740,8 @@ function render(data) {
   renderNewsTicker(data);
   updateCounter();
   updateLastUpdated(data.updatedAt);
+  const firstActiveSlide = slideshow.querySelector(".slide.active");
+  if (firstActiveSlide) activateSlideEffects(firstActiveSlide);
   if (introFinished) {
     restartSlideTimer();
   }
