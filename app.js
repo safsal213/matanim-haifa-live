@@ -24,6 +24,22 @@ function escapeHtml(value = "") {
     .replaceAll("'", "&#039;");
 }
 
+
+function productIconMarkup(iconValue, productName) {
+  const value = String(iconValue || "").trim();
+  if (!value) return `<span class="product-emoji" aria-hidden="true">•</span>`;
+  const looksLikeImage = /^https?:\/\//i.test(value) || /^data:image\//i.test(value) || /\.(png|jpe?g|webp|gif|svg)$/i.test(value);
+  if (!looksLikeImage) return `<span class="product-emoji" aria-hidden="true">${escapeHtml(value)}</span>`;
+  const source = /^https?:\/\//i.test(value) || /^data:image\//i.test(value)
+    ? value
+    : `images/products/${value.replace(/^images\/products\//i, "")}`;
+  return `
+    <span class="product-image-wrap">
+      <img class="product-image" src="${escapeHtml(source)}" alt="${escapeHtml(productName)}" loading="lazy"
+        onerror="this.closest('.product-image-wrap').innerHTML='<span class=&quot;product-emoji&quot;>🥤</span>'">
+    </span>`;
+}
+
 function imageMarkup(url, alt) {
   if (!url) return "";
   return `<img class="hero-image" src="${escapeHtml(url)}" alt="${escapeHtml(alt)}">`;
@@ -293,7 +309,10 @@ function buildSlides(data) {
   const products = storeItems.length
     ? storeItems.map(item => `
         <div class="product">
-          <span>${escapeHtml(item.icon || "•")} ${escapeHtml(item.name)}</span>
+          <div class="product-main">
+            ${productIconMarkup(item.icon, item.name)}
+            <span class="product-name">${escapeHtml(item.name)}</span>
+          </div>
           <span class="product-price">₪${escapeHtml(item.price)}</span>
         </div>
       `).join("")

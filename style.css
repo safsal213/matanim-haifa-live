@@ -1262,3 +1262,7 @@ display: inline-block;
     animation: none;
   }
 }
+
+
+/* תמונות מוצר במרכולית */
+.product-main{display:flex;align-items:center;gap:14px;min-width:0}.product-image-wrap{width:clamp(48px,5vw,78px);height:clamp(48px,5vw,78px);flex:0 0 auto;display:grid;place-items:center;overflow:hidden;border-radius:16px;background:radial-gradient(circle at 35% 25%,rgba(255,255,255,.16),transparent 42%),rgba(8,24,43,.72);border:1px solid rgba(87,174,255,.28);box-shadow:inset 0 0 18px rgba(255,255,255,.04),0 8px 22px rgba(0,0,0,.22)}.product-image{width:88%;height:88%;object-fit:contain;display:block;filter:drop-shadow(0 7px 7px rgba(0,0,0,.32))}.product-emoji{width:clamp(48px,5vw,78px);height:clamp(48px,5vw,78px);flex:0 0 auto;display:grid;place-items:center;font-size:clamp(30px,3vw,48px)}.product-name{min-width:0;overflow-wrap:anywhere}
