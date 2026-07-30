@@ -490,6 +490,22 @@ function startAnnouncementRotation(slide) {
   }, seconds * 1000);
 }
 
+
+function renderSmileContent(value){
+  const v=String(value||"").trim();
+  if(!v) return "";
+  if(/\.(mp4|webm|ogg)$/i.test(v)){
+    return `<video class="smile-video" autoplay muted loop playsinline preload="auto">
+      <source src="${escapeHtml(v)}">
+    </video>`;
+  }
+  if(/\.(png|jpe?g|webp|gif)$/i.test(v)){
+    return `<img class="smile-image" src="${escapeHtml(v)}" alt="פינת החיוך">`;
+  }
+  return `<p>${escapeHtml(v)}</p>`;
+}
+
+
 function buildSlides(data) {
   const s = data.settings || {};
   const storeItems = (data.store || []).filter(item => item.active !== false);
@@ -611,7 +627,7 @@ function buildSlides(data) {
         <div class="slide-inner">
           <div class="kicker">😂 פינת החיוך</div>
           <h2 class="accent">משפט השבוע</h2>
-          <p>${escapeHtml(s.smileCorner || "")}</p>
+          ${renderSmileContent(s.smileCorner)}
         </div>
       </section>
     `,
