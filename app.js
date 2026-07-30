@@ -568,11 +568,29 @@ function prepareSmileVideo(video) {
   if (video.readyState >= 1) applyLayout();
   else video.addEventListener("loadedmetadata", applyLayout, { once: true });
 
-  video.addEventListener("error", () => {
+  const hideVideoError = () => {
+    frame.classList.remove("smile-media-frame--error");
+    const errorBox = frame.querySelector(".smile-video-error");
+    if (errorBox) errorBox.hidden = true;
+  };
+
+  const showVideoError = () => {
+    // מציג שגיאה רק אם הסרטון באמת לא הצליח לטעון.
+    if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
+      hideVideoError();
+      return;
+    }
+
     frame.classList.add("smile-media-frame--error");
     const errorBox = frame.querySelector(".smile-video-error");
     if (errorBox) errorBox.hidden = false;
-  }, { once: true });
+  };
+
+  video.addEventListener("loadedmetadata", hideVideoError);
+  video.addEventListener("loadeddata", hideVideoError);
+  video.addEventListener("canplay", hideVideoError);
+  video.addEventListener("playing", hideVideoError);
+  video.addEventListener("error", showVideoError);
 }
 
 function setSmileVideoPlayback(activeSlide) {

@@ -1581,13 +1581,13 @@ box-shadow:0 6px 18px rgba(255,193,7,.4);
   align-items: center;
   justify-content: flex-start;
   min-height: 100%;
-  padding-top: clamp(18px, 2.2vh, 34px);
-  padding-bottom: clamp(16px, 2vh, 28px);
+  padding-top: clamp(10px, 1.2vh, 18px);
+  padding-bottom: clamp(8px, 1vh, 14px);
 }
 
 .smile-heading {
-  margin: clamp(8px, 1.2vh, 16px) 0 clamp(16px, 2vh, 26px);
-  line-height: 1.05;
+  margin: clamp(4px, .7vh, 10px) 0 clamp(8px, 1vh, 14px);
+  line-height: 1;
 }
 
 .smile-media-frame {
@@ -1597,7 +1597,7 @@ box-shadow:0 6px 18px rgba(255,193,7,.4);
   overflow: hidden;
   flex: 0 0 auto;
   max-width: 88vw;
-  max-height: 58vh;
+  max-height: 70vh;
   border-radius: 22px;
   background: #05080c;
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -1605,10 +1605,10 @@ box-shadow:0 6px 18px rgba(255,193,7,.4);
   transition: width .35s ease, height .35s ease, aspect-ratio .35s ease, opacity .3s ease;
 }
 
-/* ברירת מחדל בטוחה: אנכי. כך אין חיתוך גם לפני טעינת metadata */
+/* ברירת מחדל בטוחה: אנכי. המסגרת גדולה יותר כדי לנצל את מסך הטלוויזיה */
 .smile-media-frame--loading,
 .smile-media-frame--portrait {
-  height: min(58vh, 620px);
+  height: min(68vh, 760px);
   width: auto;
   aspect-ratio: 9 / 16;
 }
@@ -1655,7 +1655,14 @@ box-shadow:0 6px 18px rgba(255,193,7,.4);
   display: none !important;
 }
 
-.smile-video-error,
+.smile-video-error {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  z-index: 3;
+  background: #05080c;
+}
+
 .smile-empty {
   display: grid;
   place-items: center;
@@ -1675,11 +1682,11 @@ box-shadow:0 6px 18px rgba(255,193,7,.4);
 @media (max-height: 820px) {
   .smile-media-frame--loading,
   .smile-media-frame--portrait {
-    height: min(52vh, 500px);
+    height: min(62vh, 600px);
   }
 
   .smile-media-frame--landscape,
   .smile-media-frame--image {
-    height: min(43vh, 430px);
+    height: min(48vh, 470px);
   }
 }
