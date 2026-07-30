@@ -1659,8 +1659,16 @@ box-shadow:0 6px 18px rgba(255,193,7,.4);
   position: absolute;
   inset: 0;
   display: grid;
+  place-items: center;
   z-index: 3;
+  padding: 24px;
+  text-align: center;
   background: #05080c;
+}
+
+/* חשוב: המאפיין hidden חייב לגבור על display:grid */
+.smile-video-error[hidden] {
+  display: none !important;
 }
 
 .smile-empty {
