@@ -850,10 +850,24 @@ function restartSlideTimer() {
   const activeSlide = document.querySelector(".slide.active");
   const smileVideo = activeSlide?.querySelector(".smile-video");
 
-  // בפינת החיוך: סרטון נשאר עד שהוא מסתיים בפועל.
+  // בפינת החיוך: הסרטון מוצג עד סופו, אך לא מעבר לזמן המקסימלי שהוגדר.
   if (smileVideo) {
     smileVideo.loop = false;
+
+    const rawMaxSeconds = Number(
+      appData?.settings?.smileVideoMaxSeconds ??
+      appData?.settings?.maxSmileVideoSeconds ??
+      appData?.settings?.["זמן_מקסימלי_לסרטון"]
+    );
+    const maxVideoSeconds = Number.isFinite(rawMaxSeconds) && rawMaxSeconds > 0
+      ? Math.max(3, rawMaxSeconds)
+      : 30;
+
     smileVideo.onended = () => {
+      if (slideTimer) {
+        clearTimeout(slideTimer);
+        slideTimer = null;
+      }
       if (countdownTimer) {
         clearInterval(countdownTimer);
         countdownTimer = null;
@@ -869,10 +883,13 @@ function restartSlideTimer() {
     };
 
     const beginVideoTiming = () => {
-      slideDurationSeconds = Number.isFinite(smileVideo.duration)
-        ? Math.max(1, smileVideo.duration)
-        : 0;
-      startSmileVideoCountdown(smileVideo);
+      const videoDuration = Number(smileVideo.duration);
+      slideDurationSeconds = Number.isFinite(videoDuration) && videoDuration > 0
+        ? Math.min(videoDuration, maxVideoSeconds)
+        : maxVideoSeconds;
+
+      startSlideCountdown();
+      slideTimer = setTimeout(showNextSlide, slideDurationSeconds * 1000);
     };
 
     if (smileVideo.readyState >= 1) {
