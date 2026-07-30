@@ -308,12 +308,12 @@ function buildSlides(data) {
 
   const products = storeItems.length
     ? storeItems.map(item => `
-        <div class="product">
-          <div class="product-main">
+        <div class="store-card">
+          <div class="store-card-image">
             ${productIconMarkup(item.icon, item.name)}
-            <span class="product-name">${escapeHtml(item.name)}</span>
           </div>
-          <span class="product-price">₪${escapeHtml(item.price)}</span>
+          <div class="store-card-name">${escapeHtml(item.name)}</div>
+          <div class="store-card-price">₪${escapeHtml(item.price)}</div>
         </div>
       `).join("")
     : `<p class="empty">אין מוצרים פעילים כרגע</p>`;
