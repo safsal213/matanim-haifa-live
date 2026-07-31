@@ -26,14 +26,39 @@ function escapeHtml(value = "") {
 }
 
 
+function isFullMediaUrl(value) {
+  return /^(?:https?:\/\/|data:|blob:)/i.test(String(value || "").trim());
+}
+
+function resolveMediaPath(value, folder = "images") {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  // קישור מלא או כתובת מיוחדת של הדפדפן נשארים ללא שינוי.
+  if (isFullMediaUrl(raw)) return raw;
+
+  // נתיב שכבר כולל תיקייה נשאר כפי שהוא, עם הסרת ./ או / מיותרים.
+  const cleaned = raw.replace(/^(?:\.\/|\/)+/, "");
+  if (cleaned.includes("/")) return cleaned;
+
+  return `${folder.replace(/\/$/, "")}/${cleaned}`;
+}
+
+function resolveSmileMediaPath(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  const type = getSmileContentType(raw);
+  return resolveMediaPath(raw, type === "video" ? "videos" : "images");
+}
+
 function productIconMarkup(iconValue, productName) {
   const value = String(iconValue || "").trim();
   if (!value) return `<span class="product-emoji" aria-hidden="true">•</span>`;
-  const looksLikeImage = /^https?:\/\//i.test(value) || /^data:image\//i.test(value) || /\.(png|jpe?g|webp|gif|svg)$/i.test(value);
+  const looksLikeImage = isFullMediaUrl(value) || /\.(png|jpe?g|webp|gif|svg)(?:[?#].*)?$/i.test(value);
   if (!looksLikeImage) return `<span class="product-emoji" aria-hidden="true">${escapeHtml(value)}</span>`;
-  const source = /^https?:\/\//i.test(value) || /^data:image\//i.test(value)
-    ? value
-    : `images/products/${value.replace(/^images\/products\//i, "")}`;
+  const normalizedProductValue = value.replace(/^products\//i, "images/products/");
+  const source = resolveMediaPath(normalizedProductValue, "images/products");
   return `
     <span class="product-image-wrap">
       <img class="product-image" src="${escapeHtml(source)}" alt="${escapeHtml(productName)}" loading="lazy"
@@ -42,8 +67,9 @@ function productIconMarkup(iconValue, productName) {
 }
 
 function imageMarkup(url, alt) {
-  if (!url) return "";
-  return `<img class="hero-image" src="${escapeHtml(url)}" alt="${escapeHtml(alt)}">`;
+  const source = resolveMediaPath(url, "images");
+  if (!source) return "";
+  return `<img class="hero-image" src="${escapeHtml(source)}" alt="${escapeHtml(alt)}">`;
 }
 
 
@@ -515,10 +541,11 @@ function getSmileTitle(settings = {}) {
 }
 
 function renderSmileContent(value){
-  const v = String(value || "").trim();
-  if (!v) return `<div class="smile-empty">😄 אין תוכן בפינת החיוך כרגע</div>`;
+  const rawValue = String(value || "").trim();
+  if (!rawValue) return `<div class="smile-empty">😄 אין תוכן בפינת החיוך כרגע</div>`;
 
-  const type = getSmileContentType(v);
+  const type = getSmileContentType(rawValue);
+  const v = type === "text" ? rawValue : resolveSmileMediaPath(rawValue);
 
   if (type === "video") {
     return `
@@ -671,7 +698,7 @@ function buildSlides(data) {
                 s.driverImage
                   ? `<img
                        class="driver-photo"
-                       src="${escapeHtml(s.driverImage)}"
+                       src="${escapeHtml(resolveMediaPath(s.driverImage, "images"))}"
                        alt="נהג החודש"
                      >`
                   : `<div class="driver-photo-placeholder">🚂</div>`
