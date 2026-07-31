@@ -1698,3 +1698,108 @@ box-shadow:0 6px 18px rgba(255,193,7,.4);
     height: min(48vh, 470px);
   }
 }
+
+/* =========================================
+   ימי הולדת קרובים — תצוגה מוגדלת למסך TV
+   ========================================= */
+.birthday-slide:not(.birthday-today-slide) .slide-inner {
+  width: min(1500px, 94vw);
+}
+
+.birthday-slide:not(.birthday-today-slide) .kicker {
+  margin-bottom: 10px;
+  font-size: clamp(30px, 2.5vw, 46px);
+}
+
+.birthday-slide:not(.birthday-today-slide) h2 {
+  margin-bottom: clamp(28px, 3vh, 44px);
+  font-size: clamp(52px, 4.8vw, 88px);
+  line-height: 1.05;
+}
+
+.birthday-list {
+  width: min(1380px, 92vw);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(18px, 2vw, 30px);
+}
+
+.birthday-card {
+  min-height: clamp(150px, 18vh, 210px);
+  padding: clamp(24px, 2.2vw, 38px);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "icon details"
+    "icon countdown";
+  align-items: center;
+  column-gap: clamp(20px, 2vw, 34px);
+  row-gap: 8px;
+  text-align: right;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 28px;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.055));
+  box-shadow:
+    0 20px 55px rgba(0, 0, 0, 0.30),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.birthday-card-icon {
+  grid-area: icon;
+  font-size: clamp(54px, 4.8vw, 84px);
+  line-height: 1;
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,.28));
+}
+
+.birthday-card-details {
+  grid-area: details;
+  min-width: 0;
+}
+
+.birthday-card-name {
+  color: #ffffff;
+  font-size: clamp(34px, 3.1vw, 58px);
+  font-weight: 900;
+  line-height: 1.08;
+  text-shadow: 0 3px 12px rgba(0,0,0,.38);
+  overflow-wrap: anywhere;
+}
+
+.birthday-card-date {
+  margin-top: 8px;
+  color: #c9e7ff;
+  font-size: clamp(24px, 2vw, 36px);
+  font-weight: 700;
+}
+
+.birthday-card-countdown {
+  grid-area: countdown;
+  width: fit-content;
+  min-width: 180px;
+  padding: 8px 18px;
+  color: #091522;
+  font-size: clamp(22px, 1.85vw, 34px);
+  font-weight: 900;
+  line-height: 1.2;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffd166, #ffad27);
+  box-shadow: 0 8px 22px rgba(255, 174, 39, .22);
+}
+
+@media (max-width: 900px), (max-height: 720px) {
+  .birthday-list {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .birthday-card {
+    min-height: 112px;
+    padding: 18px 22px;
+  }
+
+  .birthday-slide:not(.birthday-today-slide) h2 {
+    margin-bottom: 18px;
+  }
+}
