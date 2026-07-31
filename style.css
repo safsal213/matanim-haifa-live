@@ -1803,3 +1803,30 @@ box-shadow:0 6px 18px rgba(255,193,7,.4);
     margin-bottom: 18px;
   }
 }
+
+
+/* תמונת השבוע — תצוגה גדולה ונקייה למסך טלוויזיה */
+.week-image-slide-inner {
+  width: 100%;
+  max-width: none;
+  gap: clamp(14px, 2vh, 26px);
+}
+
+.week-image-slide-inner .kicker {
+  margin-bottom: 0;
+}
+
+.hero-image.week-image {
+  width: auto;
+  height: auto;
+  max-width: 86vw;
+  max-height: 66vh;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+@media (max-height: 760px) {
+  .hero-image.week-image {
+    max-height: 60vh;
+  }
+}

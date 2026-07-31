@@ -66,10 +66,11 @@ function productIconMarkup(iconValue, productName) {
     </span>`;
 }
 
-function imageMarkup(url, alt) {
+function imageMarkup(url, alt, extraClass = "") {
   const source = resolveMediaPath(url, "images");
   if (!source) return "";
-  return `<img class="hero-image" src="${escapeHtml(source)}" alt="${escapeHtml(alt)}">`;
+  const className = ["hero-image", extraClass].filter(Boolean).join(" ");
+  return `<img class="${escapeHtml(className)}" src="${escapeHtml(source)}" alt="${escapeHtml(alt)}">`;
 }
 
 
@@ -747,11 +748,10 @@ function buildSlides(data) {
     `,
     renderBirthdaysSlide(data),
     `
-      <section class="slide">
-        <div class="slide-inner">
+      <section class="slide week-image-slide">
+        <div class="slide-inner week-image-slide-inner">
           <div class="kicker">📸 תמונת השבוע</div>
-          ${imageMarkup(s.weekImage, "תמונת השבוע")}
-          <p>${escapeHtml(s.weekImageCaption || "תמונה מהשטח")}</p>
+          ${imageMarkup(s.weekImage, "תמונת השבוע", "week-image")}
         </div>
       </section>
     `,
