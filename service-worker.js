@@ -1,4 +1,5 @@
-const CACHE_NAME = "matanim-haifa-live-v57";
+const CACHE_NAME = "matanim-haifa-live-v58";
+
 const APP_FILES = [
   "./",
   "./index.html",
@@ -7,7 +8,8 @@ const APP_FILES = [
   "./config.js",
   "./data.example.json",
   "./manifest.webmanifest",
-  "./videos/logo.mp4"
+  "./videos/logo.mp4",
+  "./videos/brko.mp4"
 ];
 
 self.addEventListener("install", event => {
@@ -30,20 +32,123 @@ self.addEventListener("activate", event => {
   self.clients.claim();
 });
 
+function isVideoRequest(request) {
+  try {
+    return /\.(mp4|webm|ogg)$/i.test(new URL(request.url).pathname);
+  } catch {
+    return false;
+  }
+}
+
+async function getFullVideoResponse(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cacheKey = new Request(request.url, {
+    method: "GET",
+    credentials: "same-origin"
+  });
+
+  let response = await cache.match(cacheKey);
+
+  if (!response) {
+    response = await fetch(cacheKey);
+
+    if (response.ok && response.status === 200) {
+      await cache.put(cacheKey, response.clone());
+    }
+  }
+
+  return response;
+}
+
+async function handleVideoRangeRequest(request) {
+  const response = await getFullVideoResponse(request);
+
+  if (!response || !response.ok) {
+    return response;
+  }
+
+  const rangeHeader = request.headers.get("range");
+
+  if (!rangeHeader) {
+    return response;
+  }
+
+  const match = /^bytes=(\d+)-(\d*)$/i.exec(rangeHeader);
+
+  if (!match) {
+    return response;
+  }
+
+  const blob = await response.blob();
+  const totalSize = blob.size;
+  const start = Number(match[1]);
+  const requestedEnd = match[2] ? Number(match[2]) : totalSize - 1;
+  const end = Math.min(requestedEnd, totalSize - 1);
+
+  if (
+    !Number.isFinite(start) ||
+    !Number.isFinite(end) ||
+    start < 0 ||
+    start > end ||
+    start >= totalSize
+  ) {
+    return new Response(null, {
+      status: 416,
+      headers: {
+        "Content-Range": `bytes */${totalSize}`
+      }
+    });
+  }
+
+  const chunk = blob.slice(start, end + 1, blob.type || "video/mp4");
+
+  return new Response(chunk, {
+    status: 206,
+    statusText: "Partial Content",
+    headers: {
+      "Content-Type": blob.type || "video/mp4",
+      "Content-Length": String(chunk.size),
+      "Content-Range": `bytes ${start}-${end}/${totalSize}`,
+      "Accept-Ranges": "bytes",
+      "Cache-Control": "public, max-age=31536000"
+    }
+  });
+}
+
 self.addEventListener("fetch", event => {
-  if (event.request.method !== "GET") return;
+  const request = event.request;
+
+  if (request.method !== "GET") {
+    return;
+  }
+
+  if (isVideoRequest(request)) {
+    event.respondWith(handleVideoRangeRequest(request));
+    return;
+  }
 
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
+    caches.match(request).then(cached => {
+      if (cached) {
+        return cached;
+      }
 
-      return fetch(event.request)
+      return fetch(request)
         .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+          if (response && response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+          }
+
           return response;
         })
-        .catch(() => caches.match("./index.html"));
+        .catch(() => {
+          if (request.mode === "navigate") {
+            return caches.match("./index.html");
+          }
+
+          return Response.error();
+        });
     })
   );
 });

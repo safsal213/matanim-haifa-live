@@ -655,11 +655,14 @@ function prepareSmileVideo(video) {
   video.addEventListener("playing", hideVideoError);
   video.addEventListener("error", showVideoError);
 
-  // מתחיל טעינה מוקדמת פעם אחת בלבד
-  try {
-    video.load();
-  } catch (error) {
-    console.warn("טעינת הסרטון נכשלה:", error);
+  // נותנים לדפדפן לטעון פעם אחת בלבד באמצעות preload="auto".
+  // קריאה חוזרת ל-load() על Android WebView עלולה לאפס את הבאפר.
+  if (video.readyState === 0 && video.networkState === HTMLMediaElement.NETWORK_EMPTY) {
+    try {
+      video.load();
+    } catch (error) {
+      console.warn("טעינת הסרטון נכשלה:", error);
+    }
   }
 }
 
@@ -887,6 +890,11 @@ function render(data) {
   currentSlide = 0;
 
   slideshow.innerHTML = buildSlides(data).join("");
+
+  document
+    .querySelectorAll(".smile-video")
+    .forEach(video => prepareSmileVideo(video));
+
   renderNewsTicker(data);
   updateCounter();
   preloadNextSlide();
@@ -907,7 +915,7 @@ function preloadSlideMedia(slide) {
   });
   slide.querySelectorAll("video").forEach(video => {
     video.preload = "auto";
-    try { video.load(); } catch (_) {}
+    prepareSmileVideo(video);
   });
 }
 
@@ -987,7 +995,7 @@ function startSmileVideoCountdown(video) {
   };
 
   updateFromVideo();
-  countdownTimer = setInterval(updateFromVideo, 100);
+  countdownTimer = setInterval(updateFromVideo, 500);
 }
 
 function restartSlideTimer() {

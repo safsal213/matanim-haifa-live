@@ -2053,3 +2053,24 @@ body.smile-video-playing .smile-video {
   transform: translateZ(0);
   backface-visibility: hidden;
 }
+
+
+/* v58 — מצב ביצועים אמיתי בזמן ניגון סרטון */
+body.smile-video-playing .news-ticker-track,
+body.smile-video-playing .topbar::after,
+body.smile-video-playing .store-card,
+body.smile-video-playing .opening-glow {
+  animation-play-state: paused !important;
+}
+
+body.smile-video-playing .smile-media-frame {
+  box-shadow: none !important;
+  contain: layout paint;
+}
+
+body.smile-video-playing .smile-video {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+  backface-visibility: visible !important;
+}
