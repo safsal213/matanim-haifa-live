@@ -527,18 +527,11 @@ function getSmileContentType(value) {
 }
 
 function getSmileTitle(settings = {}) {
-  const customTitle = String(
+  return String(
     settings.smileCornerTitle ||
     settings.smileTitle ||
     ""
   ).trim();
-
-  if (customTitle) return customTitle;
-
-  const type = getSmileContentType(settings.smileCorner);
-  if (type === "video") return "סרטון השבוע";
-  if (type === "image") return "תמונת השבוע";
-  return "משפט השבוע";
 }
 
 function renderSmileContent(value){
@@ -756,7 +749,7 @@ function buildSlides(data) {
       </section>
     `,
     `
-      <section class="slide smile-slide">
+      <section class="slide smile-slide ${smileHasTitle ? "" : "smile-slide--no-title"}">
         <div class="slide-inner smile-slide-inner">
           <div class="kicker">😂 פינת החיוך</div>
           <h2 class="accent smile-heading">${escapeHtml(getSmileTitle(s))}</h2>
