@@ -640,6 +640,7 @@ function buildSlides(data) {
   const smileTitle = getSmileTitle(s);
   const smileHasTitle = Boolean(smileTitle);
   const storeItems = (data.store || []).filter(item => item.active !== false);
+  const storeCount = Math.min(storeItems.length, 8);
 
   const products = storeItems.length
     ? storeItems.map(item => `
@@ -735,7 +736,7 @@ function buildSlides(data) {
       </section>
     `,
     `
-      <section class="slide">
+      <section class="slide store-slide store-count-${storeCount}">
         <div class="slide-inner">
           <div class="kicker">☕ המרכולית של חדר הנהגים</div>
           <h2>מחירון</h2>
@@ -784,12 +785,33 @@ function render(data) {
   slideshow.innerHTML = buildSlides(data).join("");
   renderNewsTicker(data);
   updateCounter();
+  preloadNextSlide();
   updateLastUpdated(data.updatedAt);
   const firstActiveSlide = slideshow.querySelector(".slide.active");
   if (firstActiveSlide) activateSlideEffects(firstActiveSlide);
   if (introFinished) {
     restartSlideTimer();
   }
+}
+
+
+function preloadSlideMedia(slide) {
+  if (!slide) return;
+  slide.querySelectorAll("img[data-src]").forEach(image => {
+    image.src = image.dataset.src;
+    image.removeAttribute("data-src");
+  });
+  slide.querySelectorAll("video").forEach(video => {
+    video.preload = "auto";
+    try { video.load(); } catch (_) {}
+  });
+}
+
+function preloadNextSlide() {
+  const slides = Array.from(document.querySelectorAll(".slide"));
+  if (!slides.length) return;
+  const nextIndex = (currentSlide + 1) % slides.length;
+  preloadSlideMedia(slides[nextIndex]);
 }
 
 function updateCounter() {
@@ -806,6 +828,7 @@ function showNextSlide() {
   slides[currentSlide].classList.add("active");
   activateSlideEffects(slides[currentSlide]);
   updateCounter();
+  preloadNextSlide();
   restartSlideTimer();
 }
 

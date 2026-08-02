@@ -1903,3 +1903,72 @@ box-shadow:0 6px 18px rgba(255,193,7,.4);
     grid-template-columns: 1fr;
   }
 }
+
+
+/* v55 store polish */
+.store-slide.active .store-card {
+  animation: storeCardIn .4s ease both;
+}
+.store-slide.active .store-card:nth-child(2){animation-delay:.07s}
+.store-slide.active .store-card:nth-child(3){animation-delay:.14s}
+.store-slide.active .store-card:nth-child(4){animation-delay:.21s}
+.store-slide.active .store-card:nth-child(5){animation-delay:.28s}
+.store-slide.active .store-card:nth-child(6){animation-delay:.35s}
+.store-slide.active .store-card:nth-child(7){animation-delay:.42s}
+.store-slide.active .store-card:nth-child(8){animation-delay:.49s}
+
+@keyframes storeCardIn {
+  from { opacity:0; transform:translateY(16px) scale(.97); }
+  to { opacity:1; transform:none; }
+}
+
+.store-slide.store-count-1 .products {
+  grid-template-columns:minmax(360px,520px);
+  justify-content:center;
+}
+.store-slide.store-count-2 .products {
+  grid-template-columns:repeat(2,minmax(300px,430px));
+  justify-content:center;
+  gap:40px;
+}
+.store-slide.store-count-3 .products {
+  grid-template-columns:repeat(3,minmax(240px,1fr));
+}
+.store-slide.store-count-4 .products {
+  grid-template-columns:repeat(4,minmax(210px,1fr));
+}
+.store-slide.store-count-5 .products,
+.store-slide.store-count-6 .products,
+.store-slide.store-count-7 .products,
+.store-slide.store-count-8 .products {
+  grid-template-columns:repeat(4,minmax(180px,1fr));
+  gap:20px;
+}
+.store-slide.store-count-5 .store-card,
+.store-slide.store-count-6 .store-card,
+.store-slide.store-count-7 .store-card,
+.store-slide.store-count-8 .store-card {
+  padding:18px;
+}
+.store-slide.store-count-5 .store-card-image,
+.store-slide.store-count-6 .store-card-image,
+.store-slide.store-count-7 .store-card-image,
+.store-slide.store-count-8 .store-card-image {
+  width:100px;
+  height:100px;
+}
+.smile-video {
+  opacity:0;
+  transition:opacity .35s ease;
+}
+.smile-video.is-ready { opacity:1; }
+
+@media (max-width:1100px) {
+  .store-slide.store-count-4 .products,
+  .store-slide.store-count-5 .products,
+  .store-slide.store-count-6 .products,
+  .store-slide.store-count-7 .products,
+  .store-slide.store-count-8 .products {
+    grid-template-columns:repeat(3,minmax(170px,1fr));
+  }
+}
