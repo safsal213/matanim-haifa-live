@@ -536,41 +536,82 @@ function getSmileTitle(settings = {}) {
   ).trim();
 }
 
-function renderSmileContent(value){
+function renderSmileContent(value) {
   const rawValue = String(value || "").trim();
-  if (!rawValue) return `<div class="smile-empty">😄 אין תוכן בפינת החיוך כרגע</div>`;
+
+  if (!rawValue) {
+    return `
+      <div class="smile-empty">
+        😄 אין תוכן בפינת החיוך כרגע
+      </div>
+    `;
+  }
 
   const type = getSmileContentType(rawValue);
-  const v = type === "text" ? rawValue : resolveSmileMediaPath(rawValue);
+  const resolvedValue =
+    type === "text"
+      ? rawValue
+      : resolveSmileMediaPath(rawValue);
 
   if (type === "video") {
     return `
       <div class="smile-media-frame smile-media-frame--loading">
-        <video class="smile-video" muted playsinline preload="metadata">
-          <source src="${escapeHtml(v)}">
-        </video>
-        <div class="smile-video-error" hidden>😄 לא ניתן לטעון את הסרטון</div>
-      </div>`;
+        <video
+          class="smile-video"
+          src="${escapeHtml(resolvedValue)}"
+          muted
+          playsinline
+          preload="auto"
+          disablepictureinpicture
+        ></video>
+
+        <div class="smile-video-error" hidden>
+          😄 לא ניתן לטעון את הסרטון
+        </div>
+      </div>
+    `;
   }
 
   if (type === "image") {
     return `
       <div class="smile-media-frame smile-media-frame--image">
-        <img class="smile-image" src="${escapeHtml(v)}" alt="פינת החיוך">
-      </div>`;
+        <img
+          class="smile-image"
+          src="${escapeHtml(resolvedValue)}"
+          alt="פינת החיוך"
+        >
+      </div>
+    `;
   }
 
-  return `<p class="smile-text">${escapeHtml(v)}</p>`;
+  return `
+    <p class="smile-text">
+      ${escapeHtml(resolvedValue)}
+    </p>
+  `;
 }
 
+
 function prepareSmileVideo(video) {
+  // מונע הוספה חוזרת של Event Listeners
+  if (video.dataset.prepared === "true") {
+    return;
+  }
+
+  video.dataset.prepared = "true";
+
   const frame = video.closest(".smile-media-frame");
-  if (!frame) return;
+
+  if (!frame) {
+    return;
+  }
+
+  const errorBox = frame.querySelector(".smile-video-error");
 
   const applyLayout = () => {
     const width = Number(video.videoWidth) || 0;
     const height = Number(video.videoHeight) || 0;
-    const ratio = height ? width / height : 0;
+    const ratio = height > 0 ? width / height : 0;
 
     frame.classList.remove(
       "smile-media-frame--loading",
@@ -588,58 +629,88 @@ function prepareSmileVideo(video) {
     }
   };
 
-  if (video.readyState >= 1) applyLayout();
-  else video.addEventListener("loadedmetadata", applyLayout, { once: true });
-
   const hideVideoError = () => {
     frame.classList.remove("smile-media-frame--error");
-    const errorBox = frame.querySelector(".smile-video-error");
-    if (errorBox) errorBox.hidden = true;
+
+    if (errorBox) {
+      errorBox.hidden = true;
+    }
   };
 
   const showVideoError = () => {
-    // מציג שגיאה רק אם הסרטון באמת לא הצליח לטעון.
-    if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
-      hideVideoError();
-      return;
-    }
-
     frame.classList.add("smile-media-frame--error");
-    const errorBox = frame.querySelector(".smile-video-error");
-    if (errorBox) errorBox.hidden = false;
+
+    if (errorBox) {
+      errorBox.hidden = false;
+    }
   };
 
-  video.addEventListener("loadedmetadata", hideVideoError);
+  video.addEventListener("loadedmetadata", () => {
+    applyLayout();
+    hideVideoError();
+  });
+
   video.addEventListener("loadeddata", hideVideoError);
   video.addEventListener("canplay", hideVideoError);
   video.addEventListener("playing", hideVideoError);
   video.addEventListener("error", showVideoError);
+
+  // מתחיל טעינה מוקדמת פעם אחת בלבד
+  try {
+    video.load();
+  } catch (error) {
+    console.warn("טעינת הסרטון נכשלה:", error);
+  }
 }
 
+
 function setSmileVideoPlayback(activeSlide) {
-  document.querySelectorAll(".smile-video").forEach(video => {
+  const videos = document.querySelectorAll(".smile-video");
+
+  videos.forEach(video => {
     prepareSmileVideo(video);
-    const shouldPlay = Boolean(activeSlide && activeSlide.contains(video));
+
+    const shouldPlay = Boolean(
+      activeSlide &&
+      activeSlide.contains(video)
+    );
 
     if (shouldPlay) {
-      video.muted = true;
-      video.classList.add("is-ready");
+      document.body.classList.add("smile-video-playing");
 
-      if (video.readyState === 0) {
-        try { video.load(); } catch (_) {}
-      }
+      video.muted = true;
+
+      // איפוס רק רגע לפני ההפעלה
+      try {
+        if (video.currentTime > 0.15 || video.ended) {
+          video.currentTime = 0;
+        }
+      } catch (_) {}
 
       const playPromise = video.play();
-      if (playPromise && typeof playPromise.catch === "function") {
-        playPromise.catch(() => {});
+
+      if (
+        playPromise &&
+        typeof playPromise.catch === "function"
+      ) {
+        playPromise.catch(error => {
+          console.warn("הפעלת הסרטון נכשלה:", error);
+        });
       }
+
     } else {
       video.pause();
-      try { video.currentTime = 0; } catch (_) {}
+
+      if (!document.querySelector(
+        ".smile-slide.active .smile-video"
+      )) {
+        document.body.classList.remove(
+          "smile-video-playing"
+        );
+      }
     }
   });
 }
-
 
 function buildSlides(data) {
   const s = data.settings || {};
