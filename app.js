@@ -146,7 +146,7 @@ function parseBirthdayDate(value) {
   return { day, month };
 }
 
-function getUpcomingBirthdays(items = [], limit = 5) {
+function getUpcomingBirthdays(items = [], limit = 4) {
   const today = new Date();
   const todayStart = new Date(
     today.getFullYear(),
@@ -275,6 +275,8 @@ function renderBirthdaysSlide(data) {
     `;
   }
 
+  const birthdayCount = upcoming.length;
+
   const cardsMarkup = upcoming
     .map(item => `
       <div class="birthday-card">
@@ -291,7 +293,7 @@ function renderBirthdaysSlide(data) {
     .join("");
 
   return `
-    <section class="slide birthday-slide">
+    <section class="slide birthday-slide birthday-count-${birthdayCount}">
       <div class="slide-inner">
         <div class="kicker">🎂 ימי הולדת</div>
         <h2 class="accent">ימי ההולדת הקרובים</h2>
