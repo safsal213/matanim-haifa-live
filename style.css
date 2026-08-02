@@ -2039,3 +2039,17 @@ box-shadow:0 6px 18px rgba(255,193,7,.4);
     padding: 12px;
   }
 }
+/* מצב ביצועים בזמן ניגון פינת החיוך */
+body.smile-video-playing .ticker-track,
+body.smile-video-playing .slide-timer-ring,
+body.smile-video-playing .opening-glow,
+body.smile-video-playing .store-card {
+  animation-play-state: paused !important;
+}
+
+body.smile-video-playing .smile-video {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
