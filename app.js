@@ -784,6 +784,33 @@ function buildSlides(data) {
   ];
 }
 
+
+function dataFingerprint(data) {
+  try {
+    const copy = JSON.parse(JSON.stringify(data || {}));
+    delete copy.updatedAt;
+    return JSON.stringify(copy);
+  } catch {
+    return "";
+  }
+}
+
+function renderOnlyIfChanged(data) {
+  if (!data) return false;
+
+  const currentFingerprint = dataFingerprint(appData);
+  const nextFingerprint = dataFingerprint(data);
+
+  if (appData && currentFingerprint === nextFingerprint) {
+    updateLastUpdated(data.updatedAt || appData.updatedAt);
+    appData.updatedAt = data.updatedAt || appData.updatedAt;
+    return false;
+  }
+
+  render(data);
+  return true;
+}
+
 function render(data) {
   appData = data;
   currentSlide = 0;
@@ -1039,36 +1066,62 @@ async function fetchRemoteData() {
   return response.json();
 }
 
-async function refreshData() {
+async function refreshData(options = {}) {
+  const { background = false } = options;
+
+  // בלי חיבור: ממשיכים עם המידע שכבר מוצג או עם המידע השמור.
+  if (!navigator.onLine) {
+    if (!appData) {
+      const cached = loadLocal();
+
+      if (cached) {
+        render(cached);
+      }
+    }
+
+    setConnectionState(false, Boolean(appData || loadLocal()));
+    return;
+  }
+
   try {
-    const data = DATA_URL ? await fetchRemoteData() : await loadBundledSample();
+    const data = DATA_URL
+      ? await fetchRemoteData()
+      : await loadBundledSample();
+
     saveLocal(data);
-    render(data);
-    setConnectionState(navigator.onLine, false);
+    renderOnlyIfChanged(data);
+    setConnectionState(true, false);
   } catch (error) {
     const cached = loadLocal();
-    if (cached) {
+
+    if (!appData && cached) {
       render(cached);
+    }
+
+    if (appData || cached) {
       setConnectionState(false, true);
       console.warn("מציג מידע שמור:", error);
       return;
     }
 
-    slideshow.innerHTML = `
-      <section class="slide active">
-        <div class="slide-inner">
-          <h2>לא ניתן לטעון את המידע</h2>
-          <p>בדוק את החיבור או את קובצי המערכת.</p>
-        </div>
-      </section>
-    `;
+    if (!background) {
+      slideshow.innerHTML = `
+        <section class="slide active">
+          <div class="slide-inner">
+            <h2>לא ניתן לטעון את המידע</h2>
+            <p>בדוק את החיבור או את קובצי המערכת.</p>
+          </div>
+        </section>
+      `;
+    }
+
     setConnectionState(false, false);
   }
 }
 
 window.addEventListener("online", () => {
   setConnectionState(true, false);
-  refreshData();
+  refreshData({ background: true });
 });
 
 window.addEventListener("offline", () => {
@@ -1081,8 +1134,26 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-refreshData();
-setInterval(refreshData, Math.max(1, REFRESH_MINUTES) * 60 * 1000);
+const startupCachedData = loadLocal();
+
+if (startupCachedData) {
+  render(startupCachedData);
+  setConnectionState(navigator.onLine, true);
+}
+
+if (navigator.onLine) {
+  refreshData({ background: Boolean(startupCachedData) });
+} else if (!startupCachedData) {
+  refreshData();
+}
+
+setInterval(() => {
+  if (navigator.onLine) {
+    refreshData({ background: true });
+  } else {
+    setConnectionState(false, Boolean(appData || loadLocal()));
+  }
+}, Math.max(1, REFRESH_MINUTES) * 60 * 1000);
 function updateLiveClock() {
   const clock = document.getElementById("liveClock");
   const dateElement = document.getElementById("liveDate");
