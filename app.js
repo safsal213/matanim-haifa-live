@@ -635,6 +635,8 @@ function setSmileVideoPlayback(activeSlide) {
 
 function buildSlides(data) {
   const s = data.settings || {};
+  const smileTitle = getSmileTitle(s);
+  const smileHasTitle = Boolean(smileTitle);
   const storeItems = (data.store || []).filter(item => item.active !== false);
 
   const products = storeItems.length
@@ -752,7 +754,10 @@ function buildSlides(data) {
       <section class="slide smile-slide ${smileHasTitle ? "" : "smile-slide--no-title"}">
         <div class="slide-inner smile-slide-inner">
           <div class="kicker">😂 פינת החיוך</div>
-          <h2 class="accent smile-heading">${escapeHtml(getSmileTitle(s))}</h2>
+          ${smileHasTitle
+            ? `<h2 class="accent smile-heading">${escapeHtml(smileTitle)}</h2>`
+            : ""
+          }
           ${renderSmileContent(s.smileCorner)}
         </div>
       </section>
