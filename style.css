@@ -1957,11 +1957,7 @@ box-shadow:0 6px 18px rgba(255,193,7,.4);
   width:100px;
   height:100px;
 }
-.smile-video {
-  opacity:0;
-  transition:opacity .35s ease;
-}
-.smile-video.is-ready { opacity:1; }
+
 
 @media (max-width:1100px) {
   .store-slide.store-count-4 .products,
@@ -1970,5 +1966,76 @@ box-shadow:0 6px 18px rgba(255,193,7,.4);
   .store-slide.store-count-7 .products,
   .store-slide.store-count-8 .products {
     grid-template-columns:repeat(3,minmax(170px,1fr));
+  }
+}
+
+
+/* v56 — תיקון נראות סרטון פינת החיוך */
+.smile-video {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* v56 — התאמת המרכולית למסך הטלוויזיה */
+.store-slide .slide-inner {
+  width: min(1580px, 96vw);
+  padding-top: clamp(8px, 1vh, 14px);
+  padding-bottom: clamp(8px, 1vh, 14px);
+}
+
+.store-slide .products {
+  width: min(1500px, 94vw);
+  margin: 12px auto 0;
+  align-items: stretch;
+}
+
+.store-slide.store-count-5 .products {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(14px, 1.2vw, 22px);
+}
+
+.store-slide.store-count-5 .store-card {
+  min-height: clamp(220px, 29vh, 280px);
+  padding: clamp(14px, 1.2vw, 20px);
+}
+
+.store-slide.store-count-5 .store-card-image {
+  width: clamp(82px, 6.2vw, 104px);
+  height: clamp(82px, 6.2vw, 104px);
+}
+
+.store-slide.store-count-5 .store-card-image .product-image-wrap,
+.store-slide.store-count-5 .store-card-image .product-emoji {
+  width: 100%;
+  height: 100%;
+}
+
+.store-slide.store-count-5 .store-card-name {
+  margin-top: 8px;
+  font-size: clamp(22px, 1.7vw, 30px);
+  line-height: 1.12;
+}
+
+.store-slide.store-count-5 .store-card-price {
+  margin-top: 10px;
+  padding: 7px 18px;
+  font-size: clamp(24px, 1.8vw, 31px);
+}
+
+.store-slide.store-count-6 .products,
+.store-slide.store-count-7 .products,
+.store-slide.store-count-8 .products {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 1250px) {
+  .store-slide.store-count-5 .products {
+    grid-template-columns: repeat(5, minmax(150px, 1fr));
+  }
+
+  .store-slide.store-count-5 .store-card {
+    min-height: 210px;
+    padding: 12px;
   }
 }

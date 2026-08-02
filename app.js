@@ -623,6 +623,12 @@ function setSmileVideoPlayback(activeSlide) {
 
     if (shouldPlay) {
       video.muted = true;
+      video.classList.add("is-ready");
+
+      if (video.readyState === 0) {
+        try { video.load(); } catch (_) {}
+      }
+
       const playPromise = video.play();
       if (playPromise && typeof playPromise.catch === "function") {
         playPromise.catch(() => {});
