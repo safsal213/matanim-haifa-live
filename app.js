@@ -1208,66 +1208,6 @@ window.addEventListener("offline", () => {
 });
 
 
-const fullscreenButton = document.getElementById("fullscreenButton");
-
-function isFullscreenActive() {
-  return Boolean(
-    document.fullscreenElement ||
-    document.webkitFullscreenElement ||
-    document.msFullscreenElement
-  );
-}
-
-async function enterFullscreenMode() {
-  const root = document.documentElement;
-
-  try {
-    if (root.requestFullscreen) {
-      await root.requestFullscreen({ navigationUI: "hide" });
-    } else if (root.webkitRequestFullscreen) {
-      root.webkitRequestFullscreen();
-    } else if (root.msRequestFullscreen) {
-      root.msRequestFullscreen();
-    } else {
-      throw new Error("Fullscreen API is not supported");
-    }
-  } catch (error) {
-    console.warn("לא ניתן להיכנס למסך מלא:", error);
-
-    if (fullscreenButton) {
-      fullscreenButton.textContent = "הטלוויזיה לא מאפשרת מסך מלא";
-      fullscreenButton.classList.add("fullscreen-button--error");
-
-      window.setTimeout(() => {
-        fullscreenButton.textContent = "⛶ כניסה למסך מלא";
-        fullscreenButton.classList.remove("fullscreen-button--error");
-      }, 3500);
-    }
-  }
-}
-
-function updateFullscreenButton() {
-  if (!fullscreenButton) return;
-  fullscreenButton.hidden = isFullscreenActive();
-}
-
-if (fullscreenButton) {
-  fullscreenButton.addEventListener("click", enterFullscreenMode);
-
-  fullscreenButton.addEventListener("keydown", event => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      enterFullscreenMode();
-    }
-  });
-}
-
-document.addEventListener("fullscreenchange", updateFullscreenButton);
-document.addEventListener("webkitfullscreenchange", updateFullscreenButton);
-document.addEventListener("MSFullscreenChange", updateFullscreenButton);
-
-updateFullscreenButton();
-
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("service-worker.js").catch(console.error);
