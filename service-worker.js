@@ -1,4 +1,4 @@
-const CACHE_NAME = "matanim-haifa-live-v58";
+const CACHE_NAME = "matanim-haifa-live-v59";
 
 const APP_FILES = [
   "./",
@@ -40,62 +40,49 @@ function isVideoRequest(request) {
   }
 }
 
-async function getFullVideoResponse(request) {
+async function cachedVideoRangeResponse(request) {
   const cache = await caches.open(CACHE_NAME);
-  const cacheKey = new Request(request.url, {
+  const fullRequest = new Request(request.url, {
     method: "GET",
     credentials: "same-origin"
   });
 
-  let response = await cache.match(cacheKey);
+  const cached = await cache.match(fullRequest);
 
-  if (!response) {
-    response = await fetch(cacheKey);
-
-    if (response.ok && response.status === 200) {
-      await cache.put(cacheKey, response.clone());
-    }
-  }
-
-  return response;
-}
-
-async function handleVideoRangeRequest(request) {
-  const response = await getFullVideoResponse(request);
-
-  if (!response || !response.ok) {
-    return response;
+  if (!cached) {
+    return Response.error();
   }
 
   const rangeHeader = request.headers.get("range");
 
   if (!rangeHeader) {
-    return response;
+    return cached;
   }
 
   const match = /^bytes=(\d+)-(\d*)$/i.exec(rangeHeader);
 
   if (!match) {
-    return response;
+    return cached;
   }
 
-  const blob = await response.blob();
-  const totalSize = blob.size;
+  const blob = await cached.blob();
+  const total = blob.size;
   const start = Number(match[1]);
-  const requestedEnd = match[2] ? Number(match[2]) : totalSize - 1;
-  const end = Math.min(requestedEnd, totalSize - 1);
+  const end = match[2]
+    ? Math.min(Number(match[2]), total - 1)
+    : total - 1;
 
   if (
     !Number.isFinite(start) ||
     !Number.isFinite(end) ||
     start < 0 ||
     start > end ||
-    start >= totalSize
+    start >= total
   ) {
     return new Response(null, {
       status: 416,
       headers: {
-        "Content-Range": `bytes */${totalSize}`
+        "Content-Range": `bytes */${total}`
       }
     });
   }
@@ -108,11 +95,43 @@ async function handleVideoRangeRequest(request) {
     headers: {
       "Content-Type": blob.type || "video/mp4",
       "Content-Length": String(chunk.size),
-      "Content-Range": `bytes ${start}-${end}/${totalSize}`,
-      "Accept-Ranges": "bytes",
-      "Cache-Control": "public, max-age=31536000"
+      "Content-Range": `bytes ${start}-${end}/${total}`,
+      "Accept-Ranges": "bytes"
     }
   });
+}
+
+async function handleVideoRequest(request) {
+  /*
+   * כשיש רשת, נותנים לשרת ול-WebView לטפל ישירות ב-Range.
+   * זו הדרך היציבה ביותר לניגון וידאו ב-Fully Kiosk.
+   */
+  try {
+    const networkResponse = await fetch(request);
+
+    if (networkResponse && networkResponse.ok) {
+      /*
+       * שומרים במטמון רק תשובה מלאה 200.
+       * תשובת 206 חלקית לא נשמרת כקובץ המלא.
+       */
+      if (networkResponse.status === 200 && !request.headers.get("range")) {
+        const cache = await caches.open(CACHE_NAME);
+        cache.put(
+          new Request(request.url, {
+            method: "GET",
+            credentials: "same-origin"
+          }),
+          networkResponse.clone()
+        );
+      }
+
+      return networkResponse;
+    }
+  } catch (_) {
+    // אין רשת — עוברים לעותק המקומי.
+  }
+
+  return cachedVideoRangeResponse(request);
 }
 
 self.addEventListener("fetch", event => {
@@ -123,7 +142,7 @@ self.addEventListener("fetch", event => {
   }
 
   if (isVideoRequest(request)) {
-    event.respondWith(handleVideoRangeRequest(request));
+    event.respondWith(handleVideoRequest(request));
     return;
   }
 
