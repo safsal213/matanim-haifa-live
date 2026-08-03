@@ -593,7 +593,6 @@ function renderSmileContent(value) {
 
 
 function prepareSmileVideo(video) {
-  // מונע הוספה חוזרת של Event Listeners
   if (video.dataset.prepared === "true") {
     return;
   }
@@ -601,17 +600,14 @@ function prepareSmileVideo(video) {
   video.dataset.prepared = "true";
 
   const frame = video.closest(".smile-media-frame");
-
-  if (!frame) {
-    return;
-  }
+  if (!frame) return;
 
   const errorBox = frame.querySelector(".smile-video-error");
 
   const applyLayout = () => {
     const width = Number(video.videoWidth) || 0;
     const height = Number(video.videoHeight) || 0;
-    const ratio = height > 0 ? width / height : 0;
+    const ratio = height ? width / height : 0;
 
     frame.classList.remove(
       "smile-media-frame--loading",
@@ -655,22 +651,16 @@ function prepareSmileVideo(video) {
   video.addEventListener("playing", hideVideoError);
   video.addEventListener("error", showVideoError);
 
-  // נותנים לדפדפן לטעון פעם אחת בלבד באמצעות preload="auto".
-  // קריאה חוזרת ל-load() על Android WebView עלולה לאפס את הבאפר.
-  if (video.readyState === 0 && video.networkState === HTMLMediaElement.NETWORK_EMPTY) {
-    try {
-      video.load();
-    } catch (error) {
-      console.warn("טעינת הסרטון נכשלה:", error);
-    }
-  }
+  /*
+   * לא קוראים כאן ל-video.load().
+   * ב-Chrome/Android TV קריאה חוזרת יכולה למחוק את הבאפר ולגרום
+   * לבקשת רשת חדשה אחרי כמה סבבים ללא אינטרנט.
+   */
 }
 
 
 function setSmileVideoPlayback(activeSlide) {
-  const videos = document.querySelectorAll(".smile-video");
-
-  videos.forEach(video => {
+  document.querySelectorAll(".smile-video").forEach(video => {
     prepareSmileVideo(video);
 
     const shouldPlay = Boolean(
@@ -680,12 +670,10 @@ function setSmileVideoPlayback(activeSlide) {
 
     if (shouldPlay) {
       document.body.classList.add("smile-video-playing");
-
       video.muted = true;
 
-      // איפוס רק רגע לפני ההפעלה
       try {
-        if (video.currentTime > 0.15 || video.ended) {
+        if (video.ended || video.currentTime > 0.15) {
           video.currentTime = 0;
         }
       } catch (_) {}
@@ -700,16 +688,11 @@ function setSmileVideoPlayback(activeSlide) {
           console.warn("הפעלת הסרטון נכשלה:", error);
         });
       }
-
     } else {
       video.pause();
 
-      if (!document.querySelector(
-        ".smile-slide.active .smile-video"
-      )) {
-        document.body.classList.remove(
-          "smile-video-playing"
-        );
+      if (!document.querySelector(".smile-slide.active .smile-video")) {
+        document.body.classList.remove("smile-video-playing");
       }
     }
   });
@@ -890,6 +873,10 @@ function render(data) {
   currentSlide = 0;
 
   slideshow.innerHTML = buildSlides(data).join("");
+
+  document
+    .querySelectorAll(".smile-video")
+    .forEach(video => prepareSmileVideo(video));
 
   document
     .querySelectorAll(".smile-video")
