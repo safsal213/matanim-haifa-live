@@ -1212,15 +1212,33 @@ function restartSlideTimer() {
     return;
   }
 
-  const customSeconds = Number(activeSlide?.dataset?.slideSeconds);
+  const isCoordinatorSlide =
+    activeSlide?.classList.contains("coordinator-message-slide");
+
+  const coordinatorSeconds = Number(
+    appData?.coordinatorMessages?.[0]?.slideSeconds
+  );
+
+  const customSeconds = isCoordinatorSlide
+    ? coordinatorSeconds
+    : Number(activeSlide?.dataset?.slideSeconds);
+
   const defaultSeconds =
-    Number(appData?.settings?.slideSeconds) || DEFAULT_SLIDE_SECONDS;
+    Number(appData?.settings?.slideSeconds) ||
+    DEFAULT_SLIDE_SECONDS;
 
   slideDurationSeconds = Math.max(
     3,
-    Number.isFinite(customSeconds) && customSeconds > 0
+    Number.isFinite(customSeconds) &&
+    customSeconds > 0
       ? customSeconds
       : defaultSeconds
+  );
+
+  console.log(
+    "משך שקופית:",
+    activeSlide?.className,
+    slideDurationSeconds
   );
 
   startSlideCountdown();
