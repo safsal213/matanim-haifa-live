@@ -295,11 +295,14 @@ function renderBirthdaysSlide(data) {
     .join("");
 
   return `
-    <section class="slide birthday-slide birthday-count-${birthdayCount}">
-      <div class="slide-inner">
-        <div class="kicker">🎂 ימי הולדת</div>
-        <h2 class="accent">ימי ההולדת הקרובים</h2>
-        <div class="birthday-list">
+    <section class="slide birthday-slide birthdays-upcoming-slide birthday-count-${birthdayCount}">
+      <div class="slide-inner birthdays-upcoming-inner">
+        <div class="birthdays-upcoming-header">
+          <div class="kicker">🎂 ימי הולדת</div>
+          <h2 class="accent">ימי ההולדת הקרובים</h2>
+        </div>
+
+        <div class="birthday-list birthdays-upcoming-grid">
           ${cardsMarkup}
         </div>
       </div>

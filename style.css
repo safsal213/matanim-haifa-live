@@ -2843,3 +2843,94 @@ position:static!important;transform:none!important}
 .birthdays-upcoming-slide .upcoming-birthday-card{
 min-height:0!important;height:100%!important;max-height:none!important;margin:0!important;
 padding:14px 22px!important;overflow:hidden!important}
+
+
+/* v78 — תיקון אמיתי למבנה שקופית ימי ההולדת */
+.birthdays-upcoming-slide {
+  overflow: hidden !important;
+}
+
+.birthdays-upcoming-slide .birthdays-upcoming-inner {
+  width: min(1540px, 94vw) !important;
+  height: calc(100% - 112px) !important;
+  min-height: 0 !important;
+  margin-inline: auto !important;
+  padding: 10px 22px 6px !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  row-gap: 10px !important;
+  align-items: stretch !important;
+}
+
+.birthdays-upcoming-header {
+  display: grid !important;
+  justify-items: center !important;
+  gap: 3px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.birthdays-upcoming-header .kicker {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: clamp(22px, 1.8vw, 30px) !important;
+  line-height: 1 !important;
+}
+
+.birthdays-upcoming-header .accent {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: clamp(34px, 3vw, 50px) !important;
+  line-height: 1 !important;
+  position: static !important;
+  transform: none !important;
+}
+
+.birthdays-upcoming-grid {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  overflow: hidden !important;
+  position: static !important;
+  transform: none !important;
+}
+
+.birthdays-upcoming-grid .birthday-card {
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 14px 22px !important;
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 18px !important;
+  overflow: hidden !important;
+}
+
+.birthdays-upcoming-grid .birthday-card-name {
+  font-size: clamp(26px, 2.1vw, 38px) !important;
+  line-height: 1.05 !important;
+}
+
+.birthdays-upcoming-grid .birthday-card-date {
+  font-size: clamp(20px, 1.6vw, 29px) !important;
+  line-height: 1 !important;
+}
+
+.birthdays-upcoming-grid .birthday-card-countdown {
+  font-size: clamp(16px, 1.25vw, 22px) !important;
+  padding: 5px 13px !important;
+  white-space: nowrap !important;
+}
+
+.birthdays-upcoming-grid .birthday-card-icon {
+  width: 72px !important;
+  height: 72px !important;
+  font-size: 56px !important;
+}
