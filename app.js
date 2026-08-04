@@ -830,6 +830,29 @@ function buildSlides(data) {
     `,
     renderAnnouncementSlide(data),
     `
+      <section class="slide coordinator-message-slide">
+        <div class="slide-inner coordinator-message-inner">
+          <div class="coordinator-message-kicker">📢 הודעה רשמית</div>
+
+          <h2 class="coordinator-message-title">
+            הודעות רכז נהגים סשה ארנזון
+          </h2>
+
+          <div class="coordinator-message-card">
+            <div class="coordinator-message-icon">🚂</div>
+
+            <div class="coordinator-message-content">
+              ${
+                String(s.coordinatorMessage || "").trim()
+                  ? escapeHtml(s.coordinatorMessage)
+                  : "אין הודעות חדשות כרגע"
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+    `,
+    `
       <section class="slide">
         <div class="slide-inner">
           <div class="kicker">🚂 מטענים חיפה</div>
