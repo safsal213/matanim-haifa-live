@@ -226,7 +226,7 @@ function renderBirthdaysSlide(data) {
   if (celebratingToday.length) {
     const namesMarkup = celebratingToday
       .map(item => `
-        <div class="birthday-today-name">
+        <div class="birthday-today-name birthdays-tv-grid">
           🎂 ${escapeHtml(item.name)} 🎂
         </div>
       `)
@@ -782,38 +782,33 @@ function fitCoordinatorMessageText(root = document) {
 
     let fontSize = Number.parseFloat(
       window.getComputedStyle(element).fontSize
-    ) || 34;
+    ) || 28;
 
-    let lineHeight = 1.34;
-    const minimumFontSize = 14;
+    const minimumFontSize = 12;
 
     const isOverflowing = () => (
       element.scrollHeight > container.clientHeight ||
       element.scrollWidth > container.clientWidth
     );
 
-    while (
-      fontSize > minimumFontSize &&
-      isOverflowing()
-    ) {
+    while (fontSize > minimumFontSize && isOverflowing()) {
       fontSize -= 1;
-
-      if (fontSize < 26) {
-        lineHeight = 1.24;
-      }
-
-      if (fontSize < 20) {
-        lineHeight = 1.16;
-      }
-
       element.style.fontSize = `${fontSize}px`;
-      element.style.lineHeight = String(lineHeight);
+
+      if (fontSize < 22) {
+        element.style.lineHeight = "1.14";
+      }
+
+      if (fontSize < 17) {
+        element.style.lineHeight = "1.07";
+        element.style.letterSpacing = "-0.01em";
+      }
     }
 
     if (isOverflowing()) {
       element.style.fontSize = `${minimumFontSize}px`;
-      element.style.lineHeight = "1.08";
-      element.style.letterSpacing = "-0.01em";
+      element.style.lineHeight = "1.02";
+      element.style.letterSpacing = "-0.015em";
     }
   });
 }

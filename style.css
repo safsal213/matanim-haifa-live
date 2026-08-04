@@ -2658,3 +2658,158 @@ body.smile-video-playing .smile-video {
     grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
   }
 }
+
+
+/* v76 FINAL — ימי הולדת 2×2 יציב בטלוויזיה */
+.birthdays-upcoming-slide,
+.slide:has(.birthday-card),
+.slide:has(.upcoming-birthday-card) {
+  overflow: hidden !important;
+}
+
+.birthdays-upcoming-inner,
+.slide:has(.birthday-card) .slide-inner,
+.slide:has(.upcoming-birthday-card) .slide-inner {
+  width: min(1540px, 94vw) !important;
+  height: calc(100% - 112px) !important;
+  min-height: 0 !important;
+  margin-inline: auto !important;
+  padding: 6px 22px 4px !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  align-items: stretch !important;
+}
+
+.birthdays-tv-grid,
+.birthdays-grid,
+.birthday-grid,
+.birthdays-list,
+.birthday-list,
+.upcoming-birthdays,
+.upcoming-birthdays-grid,
+.birthday-cards {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
+  grid-auto-flow: row !important;
+  grid-auto-rows: unset !important;
+  gap: 14px !important;
+  align-items: stretch !important;
+  overflow: hidden !important;
+}
+
+.birthday-card,
+.upcoming-birthday-card {
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 16px 24px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 18px !important;
+  overflow: hidden !important;
+  border-radius: 22px !important;
+}
+
+.birthday-card-content,
+.upcoming-birthday-content {
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-rows: auto auto auto !important;
+  align-content: center !important;
+  gap: 5px !important;
+}
+
+.birthday-name {
+  min-height: 0 !important;
+  margin: 0 !important;
+  font-size: clamp(26px, 2.1vw, 38px) !important;
+  line-height: 1.05 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.birthday-date {
+  margin: 0 !important;
+  font-size: clamp(20px, 1.6vw, 29px) !important;
+  line-height: 1 !important;
+}
+
+.birthday-badge,
+.birthday-countdown,
+.upcoming-birthday-badge {
+  width: fit-content !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 5px 13px !important;
+  font-size: clamp(16px, 1.25vw, 22px) !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.birthday-icon,
+.birthday-cake,
+.birthday-card-icon {
+  width: 72px !important;
+  height: 72px !important;
+  font-size: 56px !important;
+  display: grid !important;
+  place-items: center !important;
+  flex: 0 0 auto !important;
+}
+
+/* כותרת קצרה יותר כדי לפנות מקום ל-4 כרטיסים */
+.birthdays-upcoming-inner > h1,
+.birthdays-upcoming-inner > h2,
+.slide:has(.birthday-card) .slide-inner > h1,
+.slide:has(.upcoming-birthday-card) .slide-inner > h1 {
+  margin: 0 0 8px !important;
+  font-size: clamp(34px, 3vw, 52px) !important;
+  line-height: 1 !important;
+}
+
+/* v76 FINAL — הודעות רכז נהגים: טקסט מעט קטן יותר */
+.coordinator-message-main-title {
+  font-size: clamp(24px, 2.2vw, 38px) !important;
+  line-height: .96 !important;
+}
+
+.coordinator-message-name {
+  font-size: clamp(15px, 1.3vw, 22px) !important;
+  margin-top: 1px !important;
+}
+
+.coordinator-message-divider {
+  margin: 3px auto 5px !important;
+}
+
+.coordinator-message-body {
+  padding: 0 2px !important;
+}
+
+.coordinator-message-text.coordinator-text-large {
+  font-size: clamp(30px, 2.8vw, 46px) !important;
+}
+
+.coordinator-message-text.coordinator-text-medium {
+  font-size: clamp(23px, 2.05vw, 34px) !important;
+}
+
+.coordinator-message-text.coordinator-text-small {
+  font-size: clamp(16px, 1.45vw, 24px) !important;
+  line-height: 1.16 !important;
+}
+
+.coordinator-message-date {
+  font-size: clamp(11px, .9vw, 15px) !important;
+  padding: 2px 7px !important;
+  margin-top: 1px !important;
+}
