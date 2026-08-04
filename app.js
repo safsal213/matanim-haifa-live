@@ -722,6 +722,50 @@ function getCoordinatorTextSizeClass(content) {
   return "coordinator-text-small";
 }
 
+
+function fitCoordinatorMessageText(root = document) {
+  const elements = root.querySelectorAll(
+    ".coordinator-message-text"
+  );
+
+  elements.forEach(element => {
+    const container = element.closest(
+      ".coordinator-message-body"
+    );
+
+    if (!container) return;
+
+    element.style.fontSize = "";
+    element.style.lineHeight = "";
+
+    const computedSize = Number.parseFloat(
+      window.getComputedStyle(element).fontSize
+    ) || 42;
+
+    let fontSize = computedSize;
+    const minimumFontSize = 18;
+
+    while (
+      fontSize > minimumFontSize &&
+      (
+        element.scrollHeight > container.clientHeight ||
+        element.scrollWidth > container.clientWidth
+      )
+    ) {
+      fontSize -= 1;
+      element.style.fontSize = `${fontSize}px`;
+    }
+
+    if (
+      element.scrollHeight > container.clientHeight ||
+      element.scrollWidth > container.clientWidth
+    ) {
+      element.style.fontSize = `${minimumFontSize}px`;
+      element.style.lineHeight = "1.24";
+    }
+  });
+}
+
 function buildSlides(data) {
   const s = data.settings || {};
   const smileTitle = getSmileTitle(s);
@@ -871,19 +915,19 @@ function buildSlides(data) {
 
           <div class="coordinator-message-divider"></div>
 
-          <div
-            class="coordinator-message-body ${getCoordinatorTextSizeClass(
-              data.coordinatorMessages?.[0]?.content || ""
-            )}"
-          >
-            ${
+          <div class="coordinator-message-body">
+            <div
+              class="coordinator-message-text ${getCoordinatorTextSizeClass(
+                data.coordinatorMessages?.[0]?.content || ""
+              )}"
+            >${
               Array.isArray(data.coordinatorMessages) &&
               data.coordinatorMessages.length
                 ? escapeHtml(
                     data.coordinatorMessages[0].content || ""
                   )
                 : "אין הודעות חדשות כרגע"
-            }
+            }</div>
           </div>
 
           ${
@@ -948,6 +992,10 @@ function render(data) {
   currentSlide = 0;
 
   slideshow.innerHTML = buildSlides(data).join("");
+
+  requestAnimationFrame(() => {
+    fitCoordinatorMessageText(slideshow);
+  });
 
   document
     .querySelectorAll(".smile-video")
@@ -1407,3 +1455,10 @@ if (introVideo) {
 } else {
   finishIntro();
 }
+
+
+window.addEventListener("resize", () => {
+  window.requestAnimationFrame(() => {
+    fitCoordinatorMessageText(document);
+  });
+});
