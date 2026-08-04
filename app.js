@@ -267,9 +267,9 @@ function renderBirthdaysSlide(data) {
 
   if (!upcoming.length) {
     return `
-      <section class="slide birthday-slide">
-        <div class="slide-inner">
-          <div class="kicker">🎂 ימי הולדת</div>
+      <section class="slide birthdays-upcoming-slide birthday-slide">
+        <div class="slide-inner birthdays-upcoming-inner">
+          <div class="kicker">ימי הולדת</div>
           <h2 class="accent">ימי ההולדת הקרובים</h2>
           <p class="empty">לא נמצאו ימי הולדת ברשימה</p>
         </div>
