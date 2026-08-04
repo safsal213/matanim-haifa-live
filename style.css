@@ -2078,115 +2078,6 @@ body.smile-video-playing .smile-video {
 
 
 
-/* v64 — הודעות רכז נהגים */
-.coordinator-message-slide {
-  position: relative;
-  overflow: hidden;
-}
-
-.coordinator-message-slide::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 50% 30%, rgba(63, 160, 255, 0.16), transparent 42%),
-    linear-gradient(180deg, rgba(3, 13, 25, 0.15), rgba(3, 13, 25, 0.55));
-  pointer-events: none;
-}
-
-.coordinator-message-inner {
-  position: relative;
-  z-index: 1;
-  width: min(1380px, 92vw);
-  margin-inline: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100%;
-}
-
-.coordinator-message-kicker {
-  margin-bottom: 12px;
-  padding: 9px 18px;
-  border: 1px solid rgba(116, 198, 255, 0.45);
-  border-radius: 999px;
-  background: rgba(10, 38, 66, 0.72);
-  font-size: clamp(20px, 1.8vw, 30px);
-  font-weight: 800;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
-}
-
-.coordinator-message-title {
-  margin: 0 0 clamp(22px, 3vh, 38px);
-  text-align: center;
-  font-size: clamp(38px, 4.5vw, 72px);
-  line-height: 1.08;
-  color: #f7fbff;
-  text-shadow:
-    0 3px 0 rgba(0, 0, 0, 0.22),
-    0 0 24px rgba(90, 190, 255, 0.28);
-}
-
-.coordinator-message-card {
-  width: min(1180px, 88vw);
-  min-height: clamp(300px, 42vh, 460px);
-  padding: clamp(30px, 4vw, 60px);
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: clamp(24px, 3vw, 46px);
-  align-items: center;
-  border: 1px solid rgba(120, 205, 255, 0.36);
-  border-radius: 30px;
-  background:
-    linear-gradient(145deg, rgba(11, 37, 63, 0.96), rgba(5, 22, 39, 0.96));
-  box-shadow:
-    0 24px 70px rgba(0, 0, 0, 0.38),
-    inset 0 0 40px rgba(110, 190, 255, 0.05),
-    0 0 34px rgba(68, 166, 255, 0.13);
-}
-
-.coordinator-message-icon {
-  width: clamp(110px, 11vw, 170px);
-  height: clamp(110px, 11vw, 170px);
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  font-size: clamp(62px, 6vw, 96px);
-  background:
-    radial-gradient(circle at 35% 30%, rgba(255,255,255,.18), transparent 38%),
-    linear-gradient(145deg, rgba(30, 108, 174, 0.95), rgba(7, 49, 88, 0.95));
-  border: 2px solid rgba(143, 218, 255, 0.45);
-  box-shadow:
-    0 16px 38px rgba(0,0,0,.3),
-    0 0 34px rgba(69, 170, 255, 0.18);
-}
-
-.coordinator-message-content {
-  font-size: clamp(30px, 3vw, 50px);
-  line-height: 1.55;
-  font-weight: 700;
-  text-align: right;
-  white-space: pre-line;
-  color: #ffffff;
-}
-
-@media (max-width: 900px) {
-  .coordinator-message-card {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-
-  .coordinator-message-icon {
-    margin-inline: auto;
-  }
-
-  .coordinator-message-content {
-    text-align: center;
-  }
-}
-
-
 /* v66 — ימי הולדת: 4 קרובים בלבד, כרטיסים אחידים */
 .birthdays-grid,
 .upcoming-birthdays-grid,
@@ -2249,5 +2140,125 @@ body.smile-video-playing .smile-video {
   .upcoming-birthdays-grid,
   .birthday-cards {
     grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* v68 — הודעות רכז נהגים במסך מלא */
+.coordinator-message-slide {
+  position: relative;
+  overflow: hidden;
+}
+
+.coordinator-message-slide::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 25%, rgba(61, 162, 255, .16), transparent 44%),
+    linear-gradient(180deg, rgba(3, 15, 29, .16), rgba(3, 15, 29, .62));
+  pointer-events: none;
+}
+
+.coordinator-message-inner {
+  position: relative;
+  z-index: 1;
+  width: min(1660px, 95vw);
+  min-height: 100%;
+  margin-inline: auto;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  align-items: center;
+  padding:
+    clamp(18px, 2vh, 28px)
+    clamp(28px, 3vw, 56px)
+    clamp(22px, 2.5vh, 34px);
+}
+
+.coordinator-message-header {
+  text-align: center;
+}
+
+.coordinator-message-main-title {
+  font-size: clamp(38px, 4.3vw, 72px);
+  line-height: 1.08;
+  font-weight: 900;
+  color: #f8fcff;
+  text-shadow:
+    0 3px 0 rgba(0,0,0,.22),
+    0 0 26px rgba(89, 190, 255, .24);
+}
+
+.coordinator-message-name {
+  margin-top: 8px;
+  font-size: clamp(26px, 2.4vw, 42px);
+  font-weight: 800;
+  color: #79cfff;
+}
+
+.coordinator-message-divider {
+  width: min(1220px, 86vw);
+  height: 2px;
+  margin: clamp(14px, 1.8vh, 24px) auto;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(112, 204, 255, .85),
+    transparent
+  );
+  box-shadow: 0 0 18px rgba(83, 180, 255, .35);
+}
+
+.coordinator-message-body {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: right;
+  direction: rtl;
+  white-space: pre-line;
+  overflow: hidden;
+  color: #fff;
+  font-weight: 750;
+  line-height: 1.58;
+  padding: clamp(18px, 2vw, 34px) clamp(12px, 1.4vw, 24px);
+  text-wrap: pretty;
+}
+
+.coordinator-text-large {
+  font-size: clamp(42px, 4.2vw, 70px);
+}
+
+.coordinator-text-medium {
+  font-size: clamp(32px, 3.1vw, 52px);
+}
+
+.coordinator-text-small {
+  font-size: clamp(24px, 2.25vw, 38px);
+  line-height: 1.5;
+}
+
+.coordinator-message-date {
+  justify-self: end;
+  margin-top: 12px;
+  padding: 8px 16px;
+  border: 1px solid rgba(112, 204, 255, .3);
+  border-radius: 999px;
+  background: rgba(7, 32, 55, .62);
+  color: #ccecff;
+  font-size: clamp(18px, 1.5vw, 26px);
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .coordinator-message-inner {
+    width: 96vw;
+    padding-inline: 18px;
+  }
+
+  .coordinator-message-body {
+    align-items: flex-start;
+    overflow-y: auto;
   }
 }

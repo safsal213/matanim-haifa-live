@@ -700,6 +700,28 @@ function setSmileVideoPlayback(activeSlide) {
   });
 }
 
+
+function getCoordinatorTextSizeClass(content) {
+  const text = String(content || "").trim();
+
+  if (!text) {
+    return "coordinator-text-large";
+  }
+
+  const lineCount = text.split(/\r?\n/).length;
+  const length = text.length;
+
+  if (lineCount <= 5 && length <= 280) {
+    return "coordinator-text-large";
+  }
+
+  if (lineCount <= 10 && length <= 650) {
+    return "coordinator-text-medium";
+  }
+
+  return "coordinator-text-small";
+}
+
 function buildSlides(data) {
   const s = data.settings || {};
   const smileTitle = getSmileTitle(s);
@@ -830,35 +852,58 @@ function buildSlides(data) {
         </div>
       </section>
     `,
-    renderAnnouncementSlide(data),
+
     `
       <section class="slide coordinator-message-slide">
         <div class="slide-inner coordinator-message-inner">
-          <div class="coordinator-message-kicker">📢 הודעה רשמית</div>
-
-          <h2 class="coordinator-message-title">
-            הודעות רכז נהגים סשה ארנזון
-          </h2>
-
-          <div class="coordinator-message-card">
-            <div class="coordinator-message-icon">🚂</div>
-
-            <div class="coordinator-message-content">
-              ${
-                Array.isArray(data.coordinatorMessages) &&
-                data.coordinatorMessages.length
-                  ? `
-                    <strong>${escapeHtml(data.coordinatorMessages[0].title || "הודעה מטעם רכז הנהגים")}</strong>
-                    <br>
-                    ${escapeHtml(data.coordinatorMessages[0].content || "")}
-                  `
-                  : "אין הודעות חדשות כרגע"
-              }
+          <header class="coordinator-message-header">
+            <div class="coordinator-message-main-title">
+              🚂 הודעות מטעם רכז הנהגים
             </div>
+
+            <div class="coordinator-message-name">
+              ${escapeHtml(
+                s.coordinatorName ||
+                "סשה ארנזון"
+              )}
+            </div>
+          </header>
+
+          <div class="coordinator-message-divider"></div>
+
+          <div
+            class="coordinator-message-body ${getCoordinatorTextSizeClass(
+              data.coordinatorMessages?.[0]?.content || ""
+            )}"
+          >
+            ${
+              Array.isArray(data.coordinatorMessages) &&
+              data.coordinatorMessages.length
+                ? escapeHtml(
+                    data.coordinatorMessages[0].content || ""
+                  )
+                : "אין הודעות חדשות כרגע"
+            }
           </div>
+
+          ${
+            Array.isArray(data.coordinatorMessages) &&
+            data.coordinatorMessages.length &&
+            data.coordinatorMessages[0].publishDate
+              ? `
+                <div class="coordinator-message-date">
+                  📅 פורסם:
+                  ${escapeHtml(
+                    data.coordinatorMessages[0].publishDate
+                  )}
+                </div>
+              `
+              : ""
+          }
         </div>
       </section>
     `,
+    renderAnnouncementSlide(data),
     `
       <section class="slide">
         <div class="slide-inner">
