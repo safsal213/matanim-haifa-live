@@ -148,12 +148,40 @@ function parseBirthdayDate(value) {
   return { day, month };
 }
 
+function getIsraelTodayParts() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jerusalem",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(new Date());
+
+  const values = {};
+
+  parts.forEach(part => {
+    if (
+      part.type === "year" ||
+      part.type === "month" ||
+      part.type === "day"
+    ) {
+      values[part.type] = Number(part.value);
+    }
+  });
+
+  return {
+    year: values.year,
+    month: values.month,
+    day: values.day
+  };
+}
+
 function getUpcomingBirthdays(items = [], limit = 4) {
-  const today = new Date();
-  const todayStart = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate()
+  const israelToday = getIsraelTodayParts();
+
+  const todayUtc = Date.UTC(
+    israelToday.year,
+    israelToday.month - 1,
+    israelToday.day
   );
 
   return items
@@ -164,30 +192,34 @@ function getUpcomingBirthdays(items = [], limit = 4) {
         return null;
       }
 
-      let nextDate = new Date(
-        todayStart.getFullYear(),
+      let birthdayYear = israelToday.year;
+      let birthdayUtc = Date.UTC(
+        birthdayYear,
         parsed.month - 1,
         parsed.day
       );
 
-      // מונע קבלה של תאריכים לא חוקיים כמו 31/02
+      const birthdayDate = new Date(birthdayUtc);
+
+      // מונע תאריכים לא חוקיים כמו 31/02.
       if (
-        nextDate.getDate() !== parsed.day ||
-        nextDate.getMonth() !== parsed.month - 1
+        birthdayDate.getUTCDate() !== parsed.day ||
+        birthdayDate.getUTCMonth() !== parsed.month - 1
       ) {
         return null;
       }
 
-      if (nextDate < todayStart) {
-        nextDate = new Date(
-          todayStart.getFullYear() + 1,
+      if (birthdayUtc < todayUtc) {
+        birthdayYear += 1;
+        birthdayUtc = Date.UTC(
+          birthdayYear,
           parsed.month - 1,
           parsed.day
         );
       }
 
       const daysUntil = Math.round(
-        (nextDate.getTime() - todayStart.getTime()) / 86400000
+        (birthdayUtc - todayUtc) / 86400000
       );
 
       return {
@@ -220,13 +252,18 @@ function renderBirthdaysSlide(data) {
     data.birthdaysList || [],
     Math.max((data.birthdaysList || []).length, 4)
   );
-  const celebratingToday = allBirthdays.filter(item => item.daysUntil === 0);
-  const upcoming = allBirthdays.slice(0, 4);
+  const celebratingToday = allBirthdays.filter(
+    item => item.daysUntil === 0
+  );
+
+  const upcoming = allBirthdays
+    .filter(item => item.daysUntil > 0)
+    .slice(0, 4);
 
   if (celebratingToday.length) {
     const namesMarkup = celebratingToday
       .map(item => `
-        <div class="birthday-today-name birthdays-tv-grid">
+        <div class="birthday-today-name">
           🎂 ${escapeHtml(item.name)} 🎂
         </div>
       `)
