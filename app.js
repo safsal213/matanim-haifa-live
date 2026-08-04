@@ -701,6 +701,47 @@ function setSmileVideoPlayback(activeSlide) {
 }
 
 
+
+function renderCoordinatorRichText(message) {
+  const segments = Array.isArray(message?.richText)
+    ? message.richText
+    : [];
+
+  if (!segments.length) {
+    return escapeHtml(message?.content || "");
+  }
+
+  return segments.map(segment => {
+    const text = escapeHtml(segment?.text || "");
+    const styles = [];
+
+    const color = String(segment?.color || "").trim();
+
+    if (/^#[0-9a-f]{6}$/i.test(color)) {
+      styles.push(`color:${color}`);
+    }
+
+    if (segment?.bold === true) {
+      styles.push("font-weight:900");
+    }
+
+    if (segment?.italic === true) {
+      styles.push("font-style:italic");
+    }
+
+    if (segment?.underline === true) {
+      styles.push("text-decoration:underline");
+      styles.push("text-underline-offset:0.14em");
+    }
+
+    if (!styles.length) {
+      return text;
+    }
+
+    return `<span style="${styles.join(";")}">${text}</span>`;
+  }).join("");
+}
+
 function getCoordinatorTextSizeClass(content) {
   const text = String(content || "").trim();
 
@@ -1009,8 +1050,8 @@ function buildSlides(data) {
             >${
               Array.isArray(data.coordinatorMessages) &&
               data.coordinatorMessages.length
-                ? escapeHtml(
-                    data.coordinatorMessages[0].content || ""
+                ? renderCoordinatorRichText(
+                    data.coordinatorMessages[0]
                   )
                 : "אין הודעות חדשות כרגע"
             }</div>

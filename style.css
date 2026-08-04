@@ -2446,3 +2446,23 @@ body.smile-video-playing .smile-video {
     animation: none;
   }
 }
+
+
+/* v73 — Rich Text מה-Google Sheets בהודעות רכז נהגים */
+.coordinator-message-text span {
+  white-space: inherit;
+}
+
+.coordinator-message-text strong,
+.coordinator-message-text b {
+  font-weight: 900;
+}
+
+.coordinator-message-text em,
+.coordinator-message-text i {
+  font-style: italic;
+}
+
+.coordinator-message-text u {
+  text-underline-offset: .14em;
+}
