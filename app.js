@@ -8,6 +8,8 @@ let countdownTimer = null;
 let announcementRotationTimer = null;
 let slideDurationSeconds = DEFAULT_SLIDE_SECONDS;
 let introFinished = false;
+let offlineStatusTimer = null;
+let consecutiveDataFailures = 0;
 const slideshow = document.getElementById("slideshow");
 const slideCounter = document.getElementById("slideCounter");
 const slideTimerDisplay = document.getElementById("slideTimerDisplay");
@@ -212,14 +214,14 @@ function birthdayCountdownText(daysUntil) {
 }
 
 function renderBirthdaysSlide(data) {
-  // טוען את כל החוגגים של היום כדי שאף שם לא ייחתך בגלל מגבלת
-  // חמשת ימי ההולדת הקרובים. רק כשאין יום הולדת היום מציגים עד 5 קרובים.
+  // טוען את הרשימה המלאה כדי לא לפספס כמה חוגגים באותו יום.
+  // כשאין יום הולדת היום מציגים רק את 4 הקרובים ביותר.
   const allBirthdays = getUpcomingBirthdays(
     data.birthdaysList || [],
-    Math.max((data.birthdaysList || []).length, 5)
+    Math.max((data.birthdaysList || []).length, 4)
   );
   const celebratingToday = allBirthdays.filter(item => item.daysUntil === 0);
-  const upcoming = allBirthdays.slice(0, 5);
+  const upcoming = allBirthdays.slice(0, 4);
 
   if (celebratingToday.length) {
     const namesMarkup = celebratingToday
@@ -843,8 +845,13 @@ function buildSlides(data) {
 
             <div class="coordinator-message-content">
               ${
-                String(s.coordinatorMessage || "").trim()
-                  ? escapeHtml(s.coordinatorMessage)
+                Array.isArray(data.coordinatorMessages) &&
+                data.coordinatorMessages.length
+                  ? `
+                    <strong>${escapeHtml(data.coordinatorMessages[0].title || "הודעה מטעם רכז הנהגים")}</strong>
+                    <br>
+                    ${escapeHtml(data.coordinatorMessages[0].content || "")}
+                  `
                   : "אין הודעות חדשות כרגע"
               }
             </div>
@@ -1142,17 +1149,39 @@ async function loadBundledSample() {
 }
 
 async function fetchRemoteData() {
-  if (!DATA_URL) throw new Error("לא הוגדרה כתובת נתונים");
-  const separator = DATA_URL.includes("?") ? "&" : "?";
-  const response = await fetch(`${DATA_URL}${separator}t=${Date.now()}`, {
-    cache: "no-store"
-  });
-
-  if (!response.ok) {
-    throw new Error(`שגיאת שרת: ${response.status}`);
+  if (!DATA_URL) {
+    throw new Error("לא הוגדרה כתובת נתונים");
   }
 
-  return response.json();
+  const separator = DATA_URL.includes("?") ? "&" : "?";
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 15000);
+
+  try {
+    const response = await fetch(
+      `${DATA_URL}${separator}t=${Date.now()}`,
+      {
+        cache: "no-store",
+        signal: controller.signal
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`שגיאת שרת: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!data || data.success === false) {
+      throw new Error(
+        data?.error || "השרת החזיר תשובה לא תקינה"
+      );
+    }
+
+    return data;
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
 }
 
 async function refreshData(options = {}) {
@@ -1179,6 +1208,7 @@ async function refreshData(options = {}) {
 
     saveLocal(data);
     renderOnlyIfChanged(data);
+    consecutiveDataFailures = 0;
     setConnectionState(true, false);
   } catch (error) {
     const cached = loadLocal();
@@ -1188,8 +1218,20 @@ async function refreshData(options = {}) {
     }
 
     if (appData || cached) {
-      setConnectionState(false, true);
-      console.warn("מציג מידע שמור:", error);
+      consecutiveDataFailures += 1;
+
+      if (navigator.onLine) {
+        // האינטרנט מחובר; רק עדכון הנתונים נכשל זמנית.
+        // משאירים חיווי ירוק וממשיכים עם המידע האחרון.
+        setConnectionState(true, true);
+      } else {
+        setConnectionState(false, true);
+      }
+
+      console.warn(
+        "מציג מידע שמור לאחר כשל בעדכון:",
+        error
+      );
       return;
     }
 
@@ -1209,12 +1251,28 @@ async function refreshData(options = {}) {
 }
 
 window.addEventListener("online", () => {
+  if (offlineStatusTimer) {
+    window.clearTimeout(offlineStatusTimer);
+    offlineStatusTimer = null;
+  }
+
   setConnectionState(true, false);
   refreshData({ background: true });
 });
 
 window.addEventListener("offline", () => {
-  setConnectionState(false, Boolean(loadLocal()));
+  if (offlineStatusTimer) {
+    window.clearTimeout(offlineStatusTimer);
+  }
+
+  offlineStatusTimer = window.setTimeout(() => {
+    if (!navigator.onLine) {
+      setConnectionState(
+        false,
+        Boolean(appData || loadLocal())
+      );
+    }
+  }, 3000);
 });
 
 

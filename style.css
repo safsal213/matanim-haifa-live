@@ -2185,3 +2185,69 @@ body.smile-video-playing .smile-video {
     text-align: center;
   }
 }
+
+
+/* v66 — ימי הולדת: 4 קרובים בלבד, כרטיסים אחידים */
+.birthdays-grid,
+.upcoming-birthdays-grid,
+.birthday-cards {
+  width: min(1320px, 88vw) !important;
+  margin-inline: auto !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-auto-rows: 1fr !important;
+  gap: clamp(22px, 2.4vw, 34px) !important;
+  align-items: stretch !important;
+}
+
+.birthday-card,
+.upcoming-birthday-card {
+  min-height: clamp(220px, 25vh, 290px) !important;
+  height: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: clamp(20px, 2vw, 32px) !important;
+  padding: clamp(28px, 3vw, 44px) !important;
+}
+
+.birthday-card-content,
+.upcoming-birthday-content {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+}
+
+.birthday-card .birthday-name,
+.upcoming-birthday-card .birthday-name {
+  min-height: 1.35em !important;
+  display: flex !important;
+  align-items: center !important;
+  font-size: clamp(34px, 3vw, 52px) !important;
+  line-height: 1.15 !important;
+}
+
+.birthday-card .birthday-date,
+.upcoming-birthday-card .birthday-date {
+  font-size: clamp(26px, 2.2vw, 38px) !important;
+  line-height: 1.2 !important;
+}
+
+.birthday-card .birthday-badge,
+.upcoming-birthday-card .birthday-badge,
+.birthday-countdown {
+  align-self: flex-start !important;
+  min-width: 180px !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  font-size: clamp(24px, 2vw, 34px) !important;
+}
+
+@media (max-width: 900px) {
+  .birthdays-grid,
+  .upcoming-birthdays-grid,
+  .birthday-cards {
+    grid-template-columns: 1fr !important;
+  }
+}
