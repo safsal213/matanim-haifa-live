@@ -2813,3 +2813,33 @@ body.smile-video-playing .smile-video {
   padding: 2px 7px !important;
   margin-top: 1px !important;
 }
+
+/* v77 — תיקון ממוקד לשקופית ימי הולדת בלבד */
+.birthdays-upcoming-slide{overflow:hidden!important}
+.birthdays-upcoming-slide .birthdays-upcoming-inner{
+width:min(1540px,94vw)!important;height:calc(100% - 112px)!important;min-height:0!important;
+margin-inline:auto!important;padding:8px 22px 4px!important;display:grid!important;
+grid-template-rows:auto auto minmax(0,1fr)!important;align-items:stretch!important;row-gap:8px!important}
+.birthdays-upcoming-slide .birthdays-upcoming-inner>.kicker{
+grid-row:1!important;margin:0!important;padding:0!important;text-align:center!important;
+font-size:clamp(22px,1.8vw,30px)!important;line-height:1!important}
+.birthdays-upcoming-slide .birthdays-upcoming-inner>h1,
+.birthdays-upcoming-slide .birthdays-upcoming-inner>h2{
+grid-row:2!important;margin:0 0 4px!important;padding:0!important;text-align:center!important;
+font-size:clamp(34px,3vw,50px)!important;line-height:1!important;position:static!important;
+transform:none!important;z-index:2!important}
+.birthdays-upcoming-slide .birthdays-tv-grid,
+.birthdays-upcoming-slide .birthday-list,
+.birthdays-upcoming-slide .birthdays-grid,
+.birthdays-upcoming-slide .birthday-grid,
+.birthdays-upcoming-slide .upcoming-birthdays,
+.birthdays-upcoming-slide .upcoming-birthdays-grid,
+.birthdays-upcoming-slide .birthday-cards{
+grid-row:3!important;width:100%!important;height:100%!important;min-height:0!important;margin:0!important;
+display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+grid-template-rows:repeat(2,minmax(0,1fr))!important;gap:14px!important;overflow:hidden!important;
+position:static!important;transform:none!important}
+.birthdays-upcoming-slide .birthday-card,
+.birthdays-upcoming-slide .upcoming-birthday-card{
+min-height:0!important;height:100%!important;max-height:none!important;margin:0!important;
+padding:14px 22px!important;overflow:hidden!important}
