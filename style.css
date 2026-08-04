@@ -2310,3 +2310,139 @@ body.smile-video-playing .smile-video {
   padding: 5px 12px !important;
   font-size: clamp(15px, 1.2vw, 21px) !important;
 }
+
+
+/* v72 — מבצע דינמי במרכולית */
+.store-promo-banner {
+  position: relative;
+  width: min(1460px, 92vw);
+  margin: 10px auto 18px;
+  padding: clamp(16px, 1.6vw, 24px) clamp(22px, 2.4vw, 38px);
+  border: 2px solid rgba(255, 210, 90, .82);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 236, 142, .22), transparent 44%),
+    linear-gradient(135deg, rgba(110, 61, 6, .97), rgba(55, 24, 2, .97));
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, .34),
+    0 0 30px rgba(255, 180, 50, .2),
+    inset 0 0 26px rgba(255, 235, 150, .08);
+  text-align: center;
+  overflow: hidden;
+}
+
+.store-promo-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      105deg,
+      transparent 18%,
+      rgba(255,255,255,.16) 42%,
+      transparent 58%
+    );
+  transform: translateX(-130%);
+  animation: storePromoShine 5.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.store-promo-title {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(28px, 2.5vw, 44px);
+  font-weight: 900;
+  color: #fff6cf;
+  line-height: 1.05;
+}
+
+.store-promo-text {
+  position: relative;
+  z-index: 1;
+  margin-top: 6px;
+  font-size: clamp(24px, 2vw, 36px);
+  font-weight: 800;
+  color: #fff;
+}
+
+.store-promo-price {
+  position: relative;
+  z-index: 1;
+  margin-top: 4px;
+  font-size: clamp(38px, 4vw, 68px);
+  line-height: 1;
+  font-weight: 950;
+  color: #ffd85b;
+  text-shadow:
+    0 3px 0 rgba(0,0,0,.24),
+    0 0 22px rgba(255, 196, 53, .34);
+}
+
+.store-promo-until {
+  position: relative;
+  z-index: 1;
+  margin-top: 7px;
+  font-size: clamp(18px, 1.45vw, 26px);
+  font-weight: 750;
+  color: #ffe9ae;
+}
+
+.store-promo-limited {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  z-index: 2;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #d22d2d, #8c1111);
+  border: 1px solid rgba(255,255,255,.28);
+  color: #fff;
+  font-size: clamp(14px, 1.15vw, 20px);
+  font-weight: 900;
+  box-shadow: 0 8px 20px rgba(0,0,0,.26);
+  animation: storePromoPulse 2.6s ease-in-out infinite;
+}
+
+.store-slide--promo .products {
+  margin-top: 8px !important;
+}
+
+.store-slide--promo .store-card {
+  min-height: 0 !important;
+  padding-top: clamp(12px, 1.2vw, 18px) !important;
+  padding-bottom: clamp(12px, 1.2vw, 18px) !important;
+}
+
+.store-slide--promo .store-card-image {
+  width: clamp(74px, 5.8vw, 96px) !important;
+  height: clamp(74px, 5.8vw, 96px) !important;
+}
+
+@keyframes storePromoPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+}
+
+@keyframes storePromoShine {
+  0%, 62% { transform: translateX(-130%); }
+  82%, 100% { transform: translateX(130%); }
+}
+
+@media (max-width: 1000px) {
+  .store-promo-limited {
+    position: static;
+    display: inline-block;
+    margin-bottom: 6px;
+  }
+
+  .store-promo-banner {
+    padding-top: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .store-promo-banner::before,
+  .store-promo-limited {
+    animation: none;
+  }
+}

@@ -890,9 +890,65 @@ function buildSlides(data) {
       </section>
     `,
     `
-      <section class="slide store-slide store-count-${storeCount}">
+      <section class="slide store-slide store-count-${storeCount} ${
+        String(s.storePromoEnabled || "").trim() &&
+        !["לא", "false", "0"].includes(
+          String(s.storePromoEnabled || "")
+            .trim()
+            .toLowerCase()
+        )
+          ? "store-slide--promo"
+          : ""
+      }">
         <div class="slide-inner">
           <div class="kicker">☕ המרכולית של חדר הנהגים</div>
+
+          ${
+            String(s.storePromoEnabled || "").trim() &&
+            !["לא", "false", "0"].includes(
+              String(s.storePromoEnabled || "")
+                .trim()
+                .toLowerCase()
+            )
+              ? `
+                <div class="store-promo-banner">
+                  <div class="store-promo-limited">🔥 לזמן מוגבל</div>
+
+                  <div class="store-promo-title">
+                    ${escapeHtml(
+                      s.storePromoTitle ||
+                      "🎉 מבצע השקה חגיגי"
+                    )}
+                  </div>
+
+                  <div class="store-promo-text">
+                    ${escapeHtml(
+                      s.storePromoText ||
+                      "שתייה + חטיף או שוקולד"
+                    )}
+                  </div>
+
+                  <div class="store-promo-price">
+                    ${escapeHtml(
+                      s.storePromoPrice ||
+                      "8 ₪ בלבד"
+                    )}
+                  </div>
+
+                  ${
+                    String(s.storePromoUntil || "").trim()
+                      ? `
+                        <div class="store-promo-until">
+                          ${escapeHtml(s.storePromoUntil)}
+                        </div>
+                      `
+                      : ""
+                  }
+                </div>
+              `
+              : ""
+          }
+
           <h2>מחירון</h2>
           <div class="products">${products}</div>
         </div>
