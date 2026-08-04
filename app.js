@@ -766,6 +766,29 @@ function fitCoordinatorMessageText(root = document) {
   });
 }
 
+
+function getSlideDurationSeconds(slide, fallbackSeconds) {
+  const customSeconds = Number(
+    slide?.dataset?.slideSeconds
+  );
+
+  if (
+    Number.isFinite(customSeconds) &&
+    customSeconds > 0
+  ) {
+    return customSeconds;
+  }
+
+  const fallback = Number(fallbackSeconds);
+
+  return (
+    Number.isFinite(fallback) &&
+    fallback > 0
+  )
+    ? fallback
+    : 10;
+}
+
 function buildSlides(data) {
   const s = data.settings || {};
   const smileTitle = getSmileTitle(s);
@@ -898,7 +921,14 @@ function buildSlides(data) {
     `,
 
     `
-      <section class="slide coordinator-message-slide">
+      <section
+        class="slide coordinator-message-slide"
+        data-slide-seconds="${
+          Number(data.coordinatorMessages?.[0]?.slideSeconds) > 0
+            ? Number(data.coordinatorMessages[0].slideSeconds)
+            : Number(s.slideSeconds || 10)
+        }"
+      >
         <div class="slide-inner coordinator-message-inner">
           <header class="coordinator-message-header">
             <div class="coordinator-message-main-title">
