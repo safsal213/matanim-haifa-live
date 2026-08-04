@@ -778,31 +778,42 @@ function fitCoordinatorMessageText(root = document) {
 
     element.style.fontSize = "";
     element.style.lineHeight = "";
+    element.style.letterSpacing = "";
 
-    const computedSize = Number.parseFloat(
+    let fontSize = Number.parseFloat(
       window.getComputedStyle(element).fontSize
-    ) || 42;
+    ) || 34;
 
-    let fontSize = computedSize;
-    const minimumFontSize = 18;
+    let lineHeight = 1.34;
+    const minimumFontSize = 14;
+
+    const isOverflowing = () => (
+      element.scrollHeight > container.clientHeight ||
+      element.scrollWidth > container.clientWidth
+    );
 
     while (
       fontSize > minimumFontSize &&
-      (
-        element.scrollHeight > container.clientHeight ||
-        element.scrollWidth > container.clientWidth
-      )
+      isOverflowing()
     ) {
       fontSize -= 1;
+
+      if (fontSize < 26) {
+        lineHeight = 1.24;
+      }
+
+      if (fontSize < 20) {
+        lineHeight = 1.16;
+      }
+
       element.style.fontSize = `${fontSize}px`;
+      element.style.lineHeight = String(lineHeight);
     }
 
-    if (
-      element.scrollHeight > container.clientHeight ||
-      element.scrollWidth > container.clientWidth
-    ) {
+    if (isOverflowing()) {
       element.style.fontSize = `${minimumFontSize}px`;
-      element.style.lineHeight = "1.24";
+      element.style.lineHeight = "1.08";
+      element.style.letterSpacing = "-0.01em";
     }
   });
 }
@@ -1122,6 +1133,14 @@ function render(data) {
 
   requestAnimationFrame(() => {
     fitCoordinatorMessageText(slideshow);
+
+    window.setTimeout(() => {
+      fitCoordinatorMessageText(slideshow);
+    }, 180);
+
+    window.setTimeout(() => {
+      fitCoordinatorMessageText(slideshow);
+    }, 700);
   });
 
   document
