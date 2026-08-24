@@ -755,21 +755,21 @@ function renderCoordinatorRichText(message) {
     const text = escapeHtml(segment?.text || "");
     const styles = [];
 
-    const color = String(segment?.color || "").trim();
+    const color = String((segment && segment.color) || "").trim();
 
     if (/^#[0-9a-f]{6}$/i.test(color)) {
       styles.push(`color:${color}`);
     }
 
-    if (segment?.bold === true) {
+    if (segment && segment.bold === true) {
       styles.push("font-weight:900");
     }
 
-    if (segment?.italic === true) {
+    if (segment && segment.italic === true) {
       styles.push("font-style:italic");
     }
 
-    if (segment?.underline === true) {
+    if (segment && segment.underline === true) {
       styles.push("text-decoration:underline");
       styles.push("text-underline-offset:0.14em");
     }
@@ -959,7 +959,7 @@ function renderFaithStyledSegment(segment) {
 
   const styles = [];
 
-  const color = String(segment?.color || "").trim();
+  const color = String((segment && segment.color) || "").trim();
 
   // Google Sheets often reports ordinary text as black.
   // On the dark TV background black is treated as the default white.
@@ -970,20 +970,20 @@ function renderFaithStyledSegment(segment) {
     styles.push(`color:${color}`);
   }
 
-  if (segment?.bold === true) {
+  if (segment && segment.bold === true) {
     styles.push("font-weight:900");
   }
 
-  if (segment?.italic === true) {
+  if (segment && segment.italic === true) {
     styles.push("font-style:italic");
   }
 
-  if (segment?.underline === true) {
+  if (segment && segment.underline === true) {
     styles.push("text-decoration:underline");
     styles.push("text-underline-offset:0.12em");
   }
 
-  const fontFamily = String(segment?.fontFamily || "").trim();
+  const fontFamily = String((segment && segment.fontFamily) || "").trim();
 
   if (fontFamily) {
     const safeFamily = fontFamily
@@ -995,7 +995,7 @@ function renderFaithStyledSegment(segment) {
     );
   }
 
-  const fontSize = Number(segment?.fontSize);
+  const fontSize = Number(segment && segment.fontSize);
 
   if (
     Number.isFinite(fontSize) &&
@@ -1011,15 +1011,15 @@ function renderFaithStyledSegment(segment) {
 }
 
 function splitFaithIntoParagraphs(faith) {
-  const segments = Array.isArray(faith?.richText) && faith.richText.length
+  const segments = Array.isArray(faith && faith.richText) && faith.richText.length
     ? faith.richText
-    : [{ text: faith?.content || "" }];
+    : [{ text: (faith && faith.content) || "" }];
 
   const paragraphs = [];
   let current = [];
 
   segments.forEach(segment => {
-    const raw = String(segment?.text || "");
+    const raw = String((segment && segment.text) || "");
     const parts = raw.split(/\n\s*\n/);
 
     parts.forEach((part, index) => {
@@ -1046,7 +1046,7 @@ function splitFaithIntoParagraphs(faith) {
   // Fallback for text pasted with only single line breaks:
   // join wrapped PDF lines and split by punctuation where practical.
   if (paragraphs.length <= 1) {
-    const plain = String(faith?.content || "")
+    const plain = String((faith && faith.content) || "")
       .replace(/\r/g, "")
       .split("\n")
       .map(line => line.trim())
@@ -1054,7 +1054,8 @@ function splitFaithIntoParagraphs(faith) {
       .join(" ");
 
     const inferred = plain
-      .split(/(?<=[.!?])\s+(?=[\u0590-\u05FF])/)
+      .replace(/([.!?])\s+(?=[\u0590-\u05FF])/g, "$1\n")
+      .split("\n")
       .map(p => p.trim())
       .filter(Boolean);
 
@@ -1075,7 +1076,7 @@ function renderFaithColumns(faith) {
 
   const paragraphWeight = paragraph =>
     paragraph.reduce(
-      (sum, segment) => sum + String(segment?.text || "").length,
+      (sum, segment) => sum + String((segment && segment.text) || "").length,
       0
     );
 
@@ -1121,7 +1122,7 @@ function renderFaithRichText(faith) {
 }
 
 function renderFaithSlide(data) {
-  const faith = data?.faithCorner || {};
+  const faith = (data && data.faithCorner) || {};
 
   if (!isTruthySetting(faith.active)) {
     return "";
