@@ -3386,3 +3386,91 @@ padding:14px 22px!important;overflow:hidden!important}
 .faith-text-content span {
   color: inherit;
 }
+
+
+/* v90 — דקה של אמונה במסך נקי כמעט מלא */
+.faith-fullscreen-slide {
+  position: fixed !important;
+  inset: 0 0 var(--ticker-total-height, 74px) 0 !important;
+  z-index: 40 !important;
+  width: 100vw !important;
+  height: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: clamp(12px, 1.2vh, 20px) clamp(28px, 2.5vw, 52px) clamp(8px, 1vh, 16px) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: linear-gradient(135deg, #07192d 0%, #0b3155 55%, #102f4e 100%) !important;
+  overflow: hidden !important;
+}
+
+/* הכותרת מחליפה את הפס העליון ומנצלת את השטח שלו */
+.faith-fullscreen-slide .faith-header,
+.faith-fullscreen-slide .slide-title,
+.faith-fullscreen-slide .faith-title-wrap {
+  margin: 0 auto clamp(6px, .8vh, 12px) !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+}
+
+.faith-fullscreen-slide .faith-title {
+  font-size: clamp(30px, 2.25vw, 44px) !important;
+  line-height: 1.05 !important;
+  margin: 0 !important;
+}
+
+.faith-fullscreen-slide .faith-subtitle {
+  font-size: clamp(17px, 1.15vw, 23px) !important;
+  line-height: 1.05 !important;
+  margin-top: 3px !important;
+}
+
+/* בלי חלונית מסביב לטקסט */
+.faith-fullscreen-slide .faith-text-shell {
+  position: absolute !important;
+  top: clamp(76px, 9vh, 104px) !important;
+  right: clamp(28px, 2.5vw, 52px) !important;
+  left: clamp(28px, 2.5vw, 52px) !important;
+  bottom: clamp(8px, 1vh, 16px) !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+.faith-fullscreen-slide .faith-text-content.faith-columns {
+  width: 100% !important;
+  height: 100% !important;
+  gap: clamp(30px, 3.4vw, 64px) !important;
+  font-size: clamp(18px, 1.42vw, 28px) !important;
+  line-height: 1.18 !important;
+  align-items: start !important;
+}
+
+.faith-fullscreen-slide .faith-paragraph {
+  margin-bottom: .48em !important;
+}
+
+.faith-fullscreen-slide .faith-column-left {
+  padding-right: clamp(16px, 1.6vw, 30px) !important;
+}
+
+/* מכסה ספציפית את אזור הכותרת העליונה של האתר בזמן שהשקופית הזאת פעילה,
+   בלי לשנות את שאר השקופיות */
+.faith-fullscreen-slide.active {
+  z-index: 999 !important;
+}
+
+/* פס החדשות נשאר מעל השקופית */
+.news-ticker,
+.ticker,
+#ticker,
+.bottom-ticker {
+  z-index: 1200 !important;
+}

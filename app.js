@@ -821,7 +821,7 @@ function fitFaithText(root = document) {
       window.getComputedStyle(content).fontSize
     ) || 32;
 
-    const minSize = 18;
+    const minSize = 15;
 
     const overflows = () =>
       Array.from(columns).some(column =>
@@ -1147,7 +1147,7 @@ function renderFaithSlide(data) {
 
   return `
     <section
-      class="slide faith-slide"
+      class="slide faith-slide faith-fullscreen-slide"
       data-slide-seconds="${slideSeconds}"
     >
       <div class="slide-inner faith-slide-inner faith-text-mode">
