@@ -851,43 +851,99 @@ function fitFaithText(root = document) {
       return;
     }
 
-    let fontSize = 25;
-    const minimumFontSize = 13;
+    /* מתחילים קטן יותר מראש כי זו שקופית טקסט ארוכה */
+    let fontSize = 19;
+    const minimumFontSize = 10;
 
-    content.style.fontSize =
-      fontSize + "px";
-    content.style.lineHeight = "1.14";
-    content.style.letterSpacing = "";
+    const applySize = function(size) {
+      content.style.setProperty(
+        "font-size",
+        size + "px",
+        "important"
+      );
 
-    const isOverflowing = function() {
-      return Array.from(columns).some(function(column) {
-        return (
-          column.scrollHeight >
-            shell.clientHeight - 4 ||
-          column.scrollWidth >
-            column.clientWidth + 2
+      const lineHeight =
+        size <= 12 ? "1.00" :
+        size <= 14 ? "1.04" :
+        size <= 16 ? "1.08" :
+        "1.12";
+
+      content.style.setProperty(
+        "line-height",
+        lineHeight,
+        "important"
+      );
+
+      content.style.setProperty(
+        "letter-spacing",
+        size <= 13 ? "-0.015em" : "0",
+        "important"
+      );
+
+      columns.forEach(function(column) {
+        column.style.setProperty(
+          "font-size",
+          "inherit",
+          "important"
+        );
+        column.style.setProperty(
+          "line-height",
+          "inherit",
+          "important"
         );
       });
+
+      content
+        .querySelectorAll(
+          ".faith-paragraph, .faith-paragraph span"
+        )
+        .forEach(function(node) {
+          node.style.setProperty(
+            "font-size",
+            "inherit",
+            "important"
+          );
+          node.style.setProperty(
+            "line-height",
+            "inherit",
+            "important"
+          );
+        });
     };
+
+    const isOverflowing = function() {
+      const availableHeight =
+        content.clientHeight;
+
+      if (availableHeight <= 0) {
+        return false;
+      }
+
+      return Array.from(columns).some(
+        function(column) {
+          return (
+            column.scrollHeight >
+              availableHeight + 1 ||
+            column.scrollWidth >
+              column.clientWidth + 1
+          );
+        }
+      );
+    };
+
+    applySize(fontSize);
 
     while (
       fontSize > minimumFontSize &&
       isOverflowing()
     ) {
-      fontSize -= 1;
+      fontSize -= 0.5;
+      applySize(fontSize);
+    }
 
-      content.style.fontSize =
-        fontSize + "px";
-
-      if (fontSize <= 21) {
-        content.style.lineHeight = "1.08";
-      }
-
-      if (fontSize <= 17) {
-        content.style.lineHeight = "1.03";
-        content.style.letterSpacing =
-          "-0.01em";
-      }
+    /* רשת ביטחון למסכי TV עם scaling שונה */
+    if (isOverflowing()) {
+      applySize(minimumFontSize);
     }
   });
 }

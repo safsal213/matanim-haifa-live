@@ -3544,3 +3544,42 @@ body.faith-mode-active
    .topbar position
    z-index של פסי המערכת
 */
+
+
+/* =========================================================
+   v93 — Faith text fit: override all inherited/inline sizes
+   ========================================================= */
+body.faith-mode-active
+.faith-text-content.faith-columns {
+  font-size: 19px !important;
+  line-height: 1.12 !important;
+  gap: clamp(14px, 1.5vw, 28px) !important;
+}
+
+body.faith-mode-active
+.faith-text-content.faith-columns
+.faith-column,
+body.faith-mode-active
+.faith-text-content.faith-columns
+.faith-paragraph,
+body.faith-mode-active
+.faith-text-content.faith-columns
+.faith-paragraph span {
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+body.faith-mode-active
+.faith-paragraph {
+  margin-bottom: .20em !important;
+}
+
+body.faith-mode-active
+.faith-slide-title {
+  font-size: clamp(19px, 1.25vw, 24px) !important;
+}
+
+body.faith-mode-active
+.faith-slide-author {
+  font-size: clamp(10px, .68vw, 13px) !important;
+}
