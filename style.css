@@ -3148,3 +3148,66 @@ padding:14px 22px!important;overflow:hidden!important}
   border: 1px solid rgba(255,255,255,.22) !important;
   box-shadow: 0 12px 34px rgba(0,0,0,.32) !important;
 }
+
+
+/* v84 — תמונת השבוע ללא חלונית, על כל האזור שמתחת לכותרת */
+.week-image-slide {
+  padding: 8px 10px 6px !important;
+  overflow: hidden !important;
+}
+
+.week-image-slide-inner {
+  width: 100% !important;
+  max-width: none !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  gap: 6px !important;
+  align-items: stretch !important;
+}
+
+/* הכותרת נשארת בלבד */
+.week-image-slide-inner .kicker {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: clamp(24px, 2vw, 36px) !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+
+/* ביטול כל "כרטיס/חלונית" שנשארו מסביב לתמונה */
+.week-image-slide-inner,
+.week-image-slide-inner .hero-image,
+.week-image-slide-inner .week-image {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/*
+  התמונה עצמה:
+  - תופסת את כל רוחב האזור הזמין
+  - שומרת על היחס המקורי
+  - לא נחתכת
+  - מתמרכזת
+*/
+.week-image-slide-inner img.hero-image.week-image {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  align-self: stretch !important;
+  justify-self: stretch !important;
+  animation: none !important;
+}
