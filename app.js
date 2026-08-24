@@ -752,7 +752,7 @@ function renderCoordinatorRichText(message) {
   }
 
   return segments.map(segment => {
-    const text = escapeHtml(segment?.text || "");
+    const text = escapeHtml((segment && segment.text) || "");
     const styles = [];
 
     const color = String((segment && segment.color) || "").trim();
@@ -954,7 +954,7 @@ function resolveDocumentPath(value) {
 
 
 function renderFaithStyledSegment(segment) {
-  const text = escapeHtml(segment?.text || "")
+  const text = escapeHtml((segment && segment.text) || "")
     .replace(/\n/g, "<br>");
 
   const styles = [];
@@ -1089,7 +1089,7 @@ function renderFaithColumns(faith) {
   let splitIndex = Math.ceil(paragraphs.length / 2);
 
   for (let i = 0; i < paragraphs.length - 1; i += 1) {
-    running += paragraphWeight(paragraph);
+    running += paragraphWeight(paragraphs[i]);
 
     if (running >= totalWeight / 2) {
       splitIndex = i + 1;
