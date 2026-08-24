@@ -904,8 +904,7 @@ function resolveDocumentPath(value) {
   if (
     /^https?:\/\//i.test(raw) ||
     raw.startsWith("./") ||
-    raw.startsWith("/") ||
-    raw.startsWith("blob:")
+    raw.startsWith("/")
   ) {
     return raw;
   }
@@ -920,13 +919,18 @@ function renderFaithSlide(data) {
     return "";
   }
 
-  const pdfFile = String(faith.pdfFile || "").trim();
+  const imageFile = String(
+    faith.imageFile ||
+    faith.pdfFile ||
+    ""
+  ).trim();
 
-  if (!pdfFile) {
+  if (!imageFile) {
     return "";
   }
 
-  const pdfUrl = resolveDocumentPath(pdfFile);
+  const imageUrl = resolveDocumentPath(imageFile);
+
   const slideSeconds =
     Number(faith.slideSeconds) > 0
       ? Number(faith.slideSeconds)
@@ -943,17 +947,12 @@ function renderFaithSlide(data) {
           <div class="faith-slide-author">מאת יניר מנשה</div>
         </header>
 
-        <div class="faith-pdf-shell">
-          <iframe
-            class="faith-pdf-frame"
-            src="${escapeHtml(pdfUrl)}#toolbar=0&navpanes=0&scrollbar=0&view=FitH"
-            title="דקה של אמונה מאת יניר מנשה"
-            loading="eager"
-          ></iframe>
-
-          <div class="faith-pdf-fallback">
-            לא ניתן להציג את קובץ ה-PDF
-          </div>
+        <div class="faith-image-shell">
+          <img
+            class="faith-image"
+            src="${escapeHtml(imageUrl)}"
+            alt="דקה של אמונה מאת יניר מנשה"
+          >
         </div>
       </div>
     </section>
