@@ -851,9 +851,8 @@ function fitFaithText(root = document) {
       return;
     }
 
-    /* מתחילים קטן יותר מראש כי זו שקופית טקסט ארוכה */
-    let fontSize = 19;
-    const minimumFontSize = 10;
+    let fontSize = 24;
+    const minimumFontSize = 16;
 
     const applySize = function(size) {
       content.style.setProperty(
@@ -863,10 +862,9 @@ function fitFaithText(root = document) {
       );
 
       const lineHeight =
-        size <= 12 ? "1.00" :
-        size <= 14 ? "1.04" :
-        size <= 16 ? "1.08" :
-        "1.12";
+        size <= 18 ? "1.12" :
+        size <= 20 ? "1.15" :
+        "1.18";
 
       content.style.setProperty(
         "line-height",
@@ -874,28 +872,9 @@ function fitFaithText(root = document) {
         "important"
       );
 
-      content.style.setProperty(
-        "letter-spacing",
-        size <= 13 ? "-0.015em" : "0",
-        "important"
-      );
-
-      columns.forEach(function(column) {
-        column.style.setProperty(
-          "font-size",
-          "inherit",
-          "important"
-        );
-        column.style.setProperty(
-          "line-height",
-          "inherit",
-          "important"
-        );
-      });
-
       content
         .querySelectorAll(
-          ".faith-paragraph, .faith-paragraph span"
+          ".faith-column, .faith-paragraph, .faith-paragraph span"
         )
         .forEach(function(node) {
           node.style.setProperty(
@@ -913,7 +892,7 @@ function fitFaithText(root = document) {
 
     const isOverflowing = function() {
       const availableHeight =
-        content.clientHeight;
+        shell.clientHeight;
 
       if (availableHeight <= 0) {
         return false;
@@ -923,9 +902,7 @@ function fitFaithText(root = document) {
         function(column) {
           return (
             column.scrollHeight >
-              availableHeight + 1 ||
-            column.scrollWidth >
-              column.clientWidth + 1
+              availableHeight + 6
           );
         }
       );
@@ -937,13 +914,8 @@ function fitFaithText(root = document) {
       fontSize > minimumFontSize &&
       isOverflowing()
     ) {
-      fontSize -= 0.5;
+      fontSize -= 1;
       applySize(fontSize);
-    }
-
-    /* רשת ביטחון למסכי TV עם scaling שונה */
-    if (isOverflowing()) {
-      applySize(minimumFontSize);
     }
   });
 }

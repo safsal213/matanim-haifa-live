@@ -3583,3 +3583,107 @@ body.faith-mode-active
 .faith-slide-author {
   font-size: clamp(10px, .68vw, 13px) !important;
 }
+
+
+/* =========================================================
+   v94 — דקה של אמונה: קריא ומנצל את כל המסך
+   ========================================================= */
+
+body.faith-mode-active
+.faith-slide.active {
+  padding:
+    6px
+    clamp(24px, 2vw, 42px)
+    6px !important;
+}
+
+body.faith-mode-active
+.faith-slide-inner.faith-text-mode {
+  grid-template-rows:
+    auto minmax(0, 1fr) !important;
+  gap: 8px !important;
+}
+
+body.faith-mode-active
+.faith-slide-title {
+  font-size:
+    clamp(24px, 1.7vw, 32px) !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+}
+
+body.faith-mode-active
+.faith-slide-author {
+  font-size:
+    clamp(12px, .8vw, 15px) !important;
+  margin-top: 2px !important;
+}
+
+body.faith-mode-active
+.faith-text-shell {
+  height: 100% !important;
+  min-height: 0 !important;
+  display: block !important;
+  overflow: hidden !important;
+}
+
+body.faith-mode-active
+.faith-text-content.faith-columns {
+  width: 100% !important;
+  height: 100% !important;
+
+  display: grid !important;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr) !important;
+  grid-template-areas:
+    "left right" !important;
+
+  gap:
+    clamp(28px, 3vw, 56px) !important;
+
+  font-size: 24px !important;
+  line-height: 1.18 !important;
+
+  align-items: start !important;
+  overflow: hidden !important;
+}
+
+body.faith-mode-active
+.faith-column {
+  height: auto !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  align-self: start !important;
+}
+
+body.faith-mode-active
+.faith-paragraph {
+  margin:
+    0 0 .55em 0 !important;
+  padding: 0 !important;
+}
+
+body.faith-mode-active
+.faith-column-left {
+  padding-right:
+    clamp(18px, 1.5vw, 30px) !important;
+
+  border-right:
+    1px solid
+    rgba(126, 205, 255, .20) !important;
+}
+
+/* כל טקסט פנימי יורש את הגודל האחיד והקריא */
+body.faith-mode-active
+.faith-text-content
+.faith-column,
+body.faith-mode-active
+.faith-text-content
+.faith-paragraph,
+body.faith-mode-active
+.faith-text-content
+.faith-paragraph span {
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
