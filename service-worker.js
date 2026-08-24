@@ -1,4 +1,4 @@
-const CACHE_NAME = "matanim-haifa-live-v80";
+const CACHE_NAME = "matanim-haifa-live-v81";
 
 const APP_FILES = [
   "./",
@@ -31,6 +31,14 @@ self.addEventListener("activate", event => {
   );
   self.clients.claim();
 });
+
+function isPdfRequest(request) {
+  try {
+    return /\.pdf$/i.test(new URL(request.url).pathname);
+  } catch {
+    return false;
+  }
+}
 
 function isVideoRequest(request) {
   try {
@@ -128,6 +136,26 @@ self.addEventListener("fetch", event => {
   if (isVideoRequest(request)) {
     event.respondWith(
       handleCachedVideoRange(request).catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // PDF files are cache-first so the latest opened "דקה של אמונה"
+  // remains available after the connection drops.
+  if (isPdfRequest(request)) {
+    event.respondWith(
+      caches.match(request).then(cached => {
+        if (cached) return cached;
+
+        return fetch(request).then(response => {
+          if (response && response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+          }
+
+          return response;
+        });
+      })
     );
     return;
   }

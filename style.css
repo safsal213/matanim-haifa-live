@@ -2934,3 +2934,119 @@ padding:14px 22px!important;overflow:hidden!important}
   height: 72px !important;
   font-size: 56px !important;
 }
+
+
+/* v81 — תמונת השבוע ממלאת את כל האזור שמתחת לכותרת */
+.week-image-slide {
+  overflow: hidden !important;
+}
+
+.week-image-slide-inner {
+  width: 100% !important;
+  max-width: none !important;
+  height: calc(100% - 112px) !important;
+  min-height: 0 !important;
+  padding: 8px 18px 6px !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  gap: 8px !important;
+  align-items: stretch !important;
+}
+
+.week-image-slide-inner .kicker {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  align-self: center !important;
+}
+
+.week-image-slide-inner .hero-image.week-image {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  margin: 0 auto !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  align-self: stretch !important;
+  justify-self: stretch !important;
+}
+
+/* v81 — דקה של אמונה */
+.faith-slide {
+  overflow: hidden !important;
+}
+
+.faith-slide-inner {
+  width: min(1700px, 96vw) !important;
+  height: calc(100% - 112px) !important;
+  min-height: 0 !important;
+  margin-inline: auto !important;
+  padding: 8px 18px 6px !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  gap: 8px !important;
+  align-items: stretch !important;
+}
+
+.faith-slide-header {
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+.faith-slide-title {
+  color: #ffe47a;
+  font-size: clamp(34px, 3.4vw, 58px);
+  line-height: 1;
+  font-weight: 900;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, .24),
+    0 0 22px rgba(255, 224, 93, .18);
+}
+
+.faith-slide-author {
+  margin-top: 4px;
+  color: #d9efff;
+  font-size: clamp(18px, 1.6vw, 28px);
+  line-height: 1;
+  font-weight: 700;
+}
+
+.faith-pdf-shell {
+  position: relative;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(126, 205, 255, .28);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, .32),
+    0 0 24px rgba(80, 175, 255, .10);
+}
+
+.faith-pdf-frame {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border: 0;
+  background: #fff;
+}
+
+.faith-pdf-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  color: #21354a;
+  font-size: clamp(22px, 2vw, 34px);
+  font-weight: 800;
+  background: #f3f6f9;
+}

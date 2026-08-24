@@ -876,6 +876,90 @@ function getSlideDurationSeconds(slide, fallbackSeconds) {
     : 10;
 }
 
+
+function isTruthySetting(value) {
+  if (value === true) return true;
+
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase();
+
+  return [
+    "כן",
+    "true",
+    "1",
+    "פעיל",
+    "מאושר",
+    "checked",
+    "✓",
+    "✔"
+  ].includes(normalized);
+}
+
+function resolveDocumentPath(value) {
+  const raw = String(value || "").trim();
+
+  if (!raw) return "";
+
+  if (
+    /^https?:\/\//i.test(raw) ||
+    raw.startsWith("./") ||
+    raw.startsWith("/") ||
+    raw.startsWith("blob:")
+  ) {
+    return raw;
+  }
+
+  return `./documents/${raw.replace(/^documents\//i, "")}`;
+}
+
+function renderFaithSlide(data) {
+  const faith = data?.faithCorner || {};
+
+  if (!isTruthySetting(faith.active)) {
+    return "";
+  }
+
+  const pdfFile = String(faith.pdfFile || "").trim();
+
+  if (!pdfFile) {
+    return "";
+  }
+
+  const pdfUrl = resolveDocumentPath(pdfFile);
+  const slideSeconds =
+    Number(faith.slideSeconds) > 0
+      ? Number(faith.slideSeconds)
+      : 45;
+
+  return `
+    <section
+      class="slide faith-slide"
+      data-slide-seconds="${slideSeconds}"
+    >
+      <div class="slide-inner faith-slide-inner">
+        <header class="faith-slide-header">
+          <div class="faith-slide-title">✨ דקה של אמונה</div>
+          <div class="faith-slide-author">מאת יניר מנשה</div>
+        </header>
+
+        <div class="faith-pdf-shell">
+          <iframe
+            class="faith-pdf-frame"
+            src="${escapeHtml(pdfUrl)}#toolbar=0&navpanes=0&scrollbar=0&view=FitH"
+            title="דקה של אמונה מאת יניר מנשה"
+            loading="eager"
+          ></iframe>
+
+          <div class="faith-pdf-fallback">
+            לא ניתן להציג את קובץ ה-PDF
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 function buildSlides(data) {
   const s = data.settings || {};
   const smileTitle = getSmileTitle(s);
@@ -1062,6 +1146,7 @@ function buildSlides(data) {
         </div>
       </section>
     `,
+    renderFaithSlide(data),
 
     `
       <section
@@ -1130,7 +1215,7 @@ function buildSlides(data) {
         </div>
       </section>
     `
-  ];
+  ].filter(Boolean);
 }
 
 
