@@ -401,14 +401,14 @@ function activateSlideEffects(slide) {
     slide &&
     slide.classList.contains("faith-slide")
   ) {
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function() {
       fitFaithText(document);
 
-      setTimeout(() => {
+      setTimeout(function() {
         fitFaithText(document);
       }, 180);
 
-      setTimeout(() => {
+      setTimeout(function() {
         fitFaithText(document);
       }, 650);
     });
@@ -837,11 +837,10 @@ function getCoordinatorTextSizeClass(content) {
 
 
 function fitFaithText(root = document) {
-  const shells = root.querySelectorAll(
-    ".faith-text-shell"
-  );
+  const shells =
+    root.querySelectorAll(".faith-text-shell");
 
-  shells.forEach(shell => {
+  shells.forEach(function(shell) {
     const content =
       shell.querySelector(".faith-text-content");
 
@@ -852,29 +851,31 @@ function fitFaithText(root = document) {
       return;
     }
 
-    content.style.fontSize = "";
-    content.style.lineHeight = "";
-    content.style.letterSpacing = "";
-
     let fontSize = 25;
     const minimumFontSize = 13;
 
-    content.style.fontSize = fontSize + "px";
+    content.style.fontSize =
+      fontSize + "px";
     content.style.lineHeight = "1.14";
+    content.style.letterSpacing = "";
 
-    const isOverflowing = () =>
-      Array.from(columns).some(column => (
-        column.scrollHeight >
-          shell.clientHeight - 2 ||
-        column.scrollWidth >
-          column.clientWidth + 2
-      ));
+    const isOverflowing = function() {
+      return Array.from(columns).some(function(column) {
+        return (
+          column.scrollHeight >
+            shell.clientHeight - 4 ||
+          column.scrollWidth >
+            column.clientWidth + 2
+        );
+      });
+    };
 
     while (
       fontSize > minimumFontSize &&
       isOverflowing()
     ) {
       fontSize -= 1;
+
       content.style.fontSize =
         fontSize + "px";
 
@@ -887,14 +888,6 @@ function fitFaithText(root = document) {
         content.style.letterSpacing =
           "-0.01em";
       }
-    }
-
-    if (isOverflowing()) {
-      content.style.fontSize =
-        minimumFontSize + "px";
-      content.style.lineHeight = "1";
-      content.style.letterSpacing =
-        "-0.015em";
     }
   });
 }
@@ -1191,7 +1184,7 @@ function renderFaithSlide(data) {
 
   return `
     <section
-      class="slide faith-slide faith-fullscreen-slide"
+      class="slide faith-slide"
       data-slide-seconds="${slideSeconds}"
     >
       <div class="slide-inner faith-slide-inner faith-text-mode">

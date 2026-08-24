@@ -3388,121 +3388,32 @@ padding:14px 22px!important;overflow:hidden!important}
 }
 
 
-/* v90 — דקה של אמונה במסך נקי כמעט מלא */
-.faith-fullscreen-slide {
-  position: fixed !important;
-  inset: 0 0 var(--ticker-total-height, 74px) 0 !important;
-  z-index: 40 !important;
-  width: 100vw !important;
-  height: auto !important;
-  max-width: none !important;
-  margin: 0 !important;
-  padding: clamp(12px, 1.2vh, 20px) clamp(28px, 2.5vw, 52px) clamp(8px, 1vh, 16px) !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: linear-gradient(135deg, #07192d 0%, #0b3155 55%, #102f4e 100%) !important;
-  overflow: hidden !important;
+/* =========================================================
+   v92 — דקה של אמונה: מסך נקי בלי להזיז את פסי המערכת
+   ========================================================= */
+
+/* רק הפס העליון נעלם */
+body.faith-mode-active .topbar {
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
-/* הכותרת מחליפה את הפס העליון ומנצלת את השטח שלו */
-.faith-fullscreen-slide .faith-header,
-.faith-fullscreen-slide .slide-title,
-.faith-fullscreen-slide .faith-title-wrap {
-  margin: 0 auto clamp(6px, .8vh, 12px) !important;
-  padding: 0 !important;
-  min-height: 0 !important;
+/* רק אזור השקופיות מתרחב למעלה; התחתית נשארת בדיוק 88px */
+body.faith-mode-active .slideshow {
+  inset: 0 0 88px !important;
 }
 
-.faith-fullscreen-slide .faith-title {
-  font-size: clamp(30px, 2.25vw, 44px) !important;
-  line-height: 1.05 !important;
-  margin: 0 !important;
-}
-
-.faith-fullscreen-slide .faith-subtitle {
-  font-size: clamp(17px, 1.15vw, 23px) !important;
-  line-height: 1.05 !important;
-  margin-top: 3px !important;
-}
-
-/* בלי חלונית מסביב לטקסט */
-.faith-fullscreen-slide .faith-text-shell {
+/* אין fixed ואין z-index חריג לשקופית */
+body.faith-mode-active .faith-slide.active {
   position: absolute !important;
-  top: clamp(76px, 9vh, 104px) !important;
-  right: clamp(28px, 2.5vw, 52px) !important;
-  left: clamp(28px, 2.5vw, 52px) !important;
-  bottom: clamp(8px, 1vh, 16px) !important;
-  width: auto !important;
-  height: auto !important;
-  max-width: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  overflow: hidden !important;
-}
-
-.faith-fullscreen-slide .faith-text-content.faith-columns {
+  inset: 0 !important;
   width: 100% !important;
   height: 100% !important;
-  gap: clamp(30px, 3.4vw, 64px) !important;
-  font-size: clamp(18px, 1.42vw, 28px) !important;
-  line-height: 1.18 !important;
-  align-items: start !important;
-}
-
-.faith-fullscreen-slide .faith-paragraph {
-  margin-bottom: .48em !important;
-}
-
-.faith-fullscreen-slide .faith-column-left {
-  padding-right: clamp(16px, 1.6vw, 30px) !important;
-}
-
-/* מכסה ספציפית את אזור הכותרת העליונה של האתר בזמן שהשקופית הזאת פעילה,
-   בלי לשנות את שאר השקופיות */
-.faith-fullscreen-slide.active {
-  z-index: 999 !important;
-}
-
-/* פס החדשות נשאר מעל השקופית */
-.news-ticker,
-.ticker,
-#ticker,
-.bottom-ticker {
-  z-index: 1200 !important;
-}
-
-
-/* ======================================================
-   v91 — דקה של אמונה: TRUE FULLSCREEN
-   ====================================================== */
-
-body.faith-mode-active .topbar {
-  display: none !important;
-}
-
-/* שורת הסטטוס והחדשות למטה נשארות */
-body.faith-mode-active .statusbar {
-  display: flex !important;
-}
-
-body.faith-mode-active .faith-fullscreen-slide.active {
-  position: fixed !important;
-  top: 0 !important;
-  right: 0 !important;
-  left: 0 !important;
-  bottom: 72px !important;
-  width: 100vw !important;
-  height: auto !important;
   margin: 0 !important;
   padding:
-    5px
+    6px
     clamp(18px, 1.6vw, 32px)
     4px !important;
-  z-index: 900 !important;
   background:
     linear-gradient(
       135deg,
@@ -3513,7 +3424,8 @@ body.faith-mode-active .faith-fullscreen-slide.active {
   overflow: hidden !important;
 }
 
-.faith-fullscreen-slide .faith-slide-inner.faith-text-mode {
+body.faith-mode-active
+.faith-slide-inner.faith-text-mode {
   width: 100% !important;
   max-width: none !important;
   height: 100% !important;
@@ -3526,29 +3438,35 @@ body.faith-mode-active .faith-fullscreen-slide.active {
   gap: 4px !important;
 }
 
-.faith-fullscreen-slide .faith-slide-header {
+/* כותרת קטנה כדי לחסוך גובה */
+body.faith-mode-active
+.faith-slide-header {
   margin: 0 !important;
   padding: 0 !important;
-  min-height: 0 !important;
   text-align: center !important;
 }
 
-.faith-fullscreen-slide .faith-slide-title {
+body.faith-mode-active
+.faith-slide-title {
   margin: 0 !important;
   padding: 0 !important;
-  font-size: clamp(23px, 1.65vw, 32px) !important;
+  font-size:
+    clamp(22px, 1.55vw, 30px) !important;
   line-height: 1 !important;
 }
 
-.faith-fullscreen-slide .faith-slide-author {
+body.faith-mode-active
+.faith-slide-author {
   margin: 1px 0 0 !important;
   padding: 0 !important;
-  font-size: clamp(12px, .82vw, 16px) !important;
+  font-size:
+    clamp(12px, .78vw, 15px) !important;
   line-height: 1 !important;
 }
 
-.faith-fullscreen-slide .faith-text-shell {
-  position: static !important;
+/* בלי חלונית בכלל */
+body.faith-mode-active
+.faith-text-shell {
   width: 100% !important;
   height: 100% !important;
   min-width: 0 !important;
@@ -3557,62 +3475,72 @@ body.faith-mode-active .faith-fullscreen-slide.active {
   padding: 0 !important;
   border: 0 !important;
   border-radius: 0 !important;
-  box-shadow: none !important;
   background: transparent !important;
+  box-shadow: none !important;
   overflow: hidden !important;
 }
 
-.faith-fullscreen-slide .faith-text-content.faith-columns {
+/* שני טורים שמנצלים את כל האזור */
+body.faith-mode-active
+.faith-text-content.faith-columns {
   width: 100% !important;
   height: 100% !important;
   min-width: 0 !important;
   min-height: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
+
   display: grid !important;
   grid-template-columns:
     minmax(0, 1fr)
     minmax(0, 1fr) !important;
   grid-template-areas:
     "left right" !important;
-  gap: clamp(18px, 2.1vw, 40px) !important;
+
+  gap:
+    clamp(18px, 2vw, 36px) !important;
+
   font-size: 25px;
   line-height: 1.14;
   overflow: hidden !important;
 }
 
-/* קריטי — כל הטקסט יורש את הגודל שה-auto-fit קובע */
-.faith-fullscreen-slide .faith-text-content span {
+/* חשוב: גודל הפונט נשלט רק ע"י auto-fit */
+body.faith-mode-active
+.faith-text-content span {
   font-size: inherit !important;
 }
 
-.faith-fullscreen-slide .faith-column {
+/* פחות בזבוז מקום בין פסקאות */
+body.faith-mode-active
+.faith-paragraph {
+  margin:
+    0 0 .30em 0 !important;
+  padding: 0 !important;
+}
+
+body.faith-mode-active
+.faith-column {
   width: 100% !important;
   height: 100% !important;
   min-width: 0 !important;
   min-height: 0 !important;
-  padding-top: 2px !important;
   overflow: hidden !important;
 }
 
-.faith-fullscreen-slide .faith-paragraph {
-  margin: 0 0 .32em 0 !important;
-  padding: 0 !important;
-}
-
-.faith-fullscreen-slide .faith-column-left {
+body.faith-mode-active
+.faith-column-left {
   padding-right:
     clamp(10px, 1vw, 18px) !important;
+
   border-right:
     1px solid
     rgba(126, 205, 255, .16) !important;
 }
 
-/* שמירת הפס התחתון מעל השקופית */
-.statusbar,
-.ticker,
-.news-ticker,
-.bottom-ticker {
-  position: relative;
-  z-index: 1200 !important;
-}
+/* בכוונה אין כאן שום שינוי ל:
+   .statusbar
+   .news-ticker
+   .topbar position
+   z-index של פסי המערכת
+*/
