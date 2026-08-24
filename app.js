@@ -375,13 +375,44 @@ function launchBirthdayConfetti() {
 
 function activateSlideEffects(slide) {
   stopAnnouncementRotation();
+
+  document.body.classList.toggle(
+    "faith-mode-active",
+    Boolean(
+      slide &&
+      slide.classList.contains("faith-slide")
+    )
+  );
+
   setSmileVideoPlayback(slide);
-  if (slide?.classList.contains("birthday-today-slide")) {
+
+  if (
+    slide &&
+    slide.classList.contains("birthday-today-slide")
+  ) {
     launchBirthdayConfetti();
   } else {
     clearBirthdayEffects();
   }
+
   startAnnouncementRotation(slide);
+
+  if (
+    slide &&
+    slide.classList.contains("faith-slide")
+  ) {
+    requestAnimationFrame(() => {
+      fitFaithText(document);
+
+      setTimeout(() => {
+        fitFaithText(document);
+      }, 180);
+
+      setTimeout(() => {
+        fitFaithText(document);
+      }, 650);
+    });
+  }
 }
 
 
@@ -806,44 +837,67 @@ function getCoordinatorTextSizeClass(content) {
 
 
 function fitFaithText(root = document) {
-  const shells = root.querySelectorAll(".faith-text-shell");
+  const shells = root.querySelectorAll(
+    ".faith-text-shell"
+  );
 
   shells.forEach(shell => {
-    const content = shell.querySelector(".faith-text-content");
-    const columns = shell.querySelectorAll(".faith-column");
+    const content =
+      shell.querySelector(".faith-text-content");
 
-    if (!content || !columns.length) return;
+    const columns =
+      shell.querySelectorAll(".faith-column");
+
+    if (!content || !columns.length) {
+      return;
+    }
 
     content.style.fontSize = "";
     content.style.lineHeight = "";
+    content.style.letterSpacing = "";
 
-    let fontSize = Number.parseFloat(
-      window.getComputedStyle(content).fontSize
-    ) || 32;
+    let fontSize = 25;
+    const minimumFontSize = 13;
 
-    const minSize = 15;
+    content.style.fontSize = fontSize + "px";
+    content.style.lineHeight = "1.14";
 
-    const overflows = () =>
-      Array.from(columns).some(column =>
-        column.scrollHeight > content.clientHeight ||
-        column.scrollWidth > column.clientWidth
-      );
+    const isOverflowing = () =>
+      Array.from(columns).some(column => (
+        column.scrollHeight >
+          shell.clientHeight - 2 ||
+        column.scrollWidth >
+          column.clientWidth + 2
+      ));
 
-    while (fontSize > minSize && overflows()) {
+    while (
+      fontSize > minimumFontSize &&
+      isOverflowing()
+    ) {
       fontSize -= 1;
-      content.style.fontSize = `${fontSize}px`;
+      content.style.fontSize =
+        fontSize + "px";
 
-      if (fontSize < 28) {
-        content.style.lineHeight = "1.25";
+      if (fontSize <= 21) {
+        content.style.lineHeight = "1.08";
       }
 
-      if (fontSize < 23) {
-        content.style.lineHeight = "1.16";
+      if (fontSize <= 17) {
+        content.style.lineHeight = "1.03";
+        content.style.letterSpacing =
+          "-0.01em";
       }
+    }
+
+    if (isOverflowing()) {
+      content.style.fontSize =
+        minimumFontSize + "px";
+      content.style.lineHeight = "1";
+      content.style.letterSpacing =
+        "-0.015em";
     }
   });
 }
-
 function fitCoordinatorMessageText(root = document) {
   const elements = root.querySelectorAll(
     ".coordinator-message-text"
@@ -993,16 +1047,6 @@ function renderFaithStyledSegment(segment) {
     styles.push(
       `font-family:"${safeFamily}","David Libre","Noto Serif Hebrew","Arial Hebrew",Arial,sans-serif`
     );
-  }
-
-  const fontSize = Number(segment && segment.fontSize);
-
-  if (
-    Number.isFinite(fontSize) &&
-    fontSize >= 8 &&
-    fontSize <= 72
-  ) {
-    styles.push(`font-size:${fontSize}px`);
   }
 
   return styles.length
