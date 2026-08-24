@@ -804,6 +804,47 @@ function getCoordinatorTextSizeClass(content) {
 }
 
 
+
+function fitFaithText(root = document) {
+  const elements = root.querySelectorAll(
+    ".faith-text-content"
+  );
+
+  elements.forEach(element => {
+    const container = element.closest(
+      ".faith-text-shell"
+    );
+
+    if (!container) return;
+
+    element.style.fontSize = "";
+    element.style.lineHeight = "";
+
+    let fontSize = Number.parseFloat(
+      window.getComputedStyle(element).fontSize
+    ) || 34;
+
+    const minSize = 18;
+
+    const overflow = () =>
+      element.scrollHeight > container.clientHeight ||
+      element.scrollWidth > container.clientWidth;
+
+    while (fontSize > minSize && overflow()) {
+      fontSize -= 1;
+      element.style.fontSize = `${fontSize}px`;
+
+      if (fontSize < 28) {
+        element.style.lineHeight = "1.28";
+      }
+
+      if (fontSize < 23) {
+        element.style.lineHeight = "1.18";
+      }
+    }
+  });
+}
+
 function fitCoordinatorMessageText(root = document) {
   const elements = root.querySelectorAll(
     ".coordinator-message-text"
@@ -912,6 +953,69 @@ function resolveDocumentPath(value) {
   return `./documents/${raw.replace(/^documents\//i, "")}`;
 }
 
+
+function renderFaithRichText(faith) {
+  const segments = Array.isArray(faith?.richText)
+    ? faith.richText
+    : [];
+
+  if (!segments.length) {
+    return escapeHtml(faith?.content || "")
+      .replace(/\n/g, "<br>");
+  }
+
+  return segments.map(segment => {
+    const text = escapeHtml(segment?.text || "")
+      .replace(/\n/g, "<br>");
+
+    const styles = [];
+
+    const color = String(segment?.color || "").trim();
+    if (/^#[0-9a-f]{6}$/i.test(color)) {
+      styles.push(`color:${color}`);
+    }
+
+    if (segment?.bold === true) {
+      styles.push("font-weight:900");
+    }
+
+    if (segment?.italic === true) {
+      styles.push("font-style:italic");
+    }
+
+    if (segment?.underline === true) {
+      styles.push("text-decoration:underline");
+      styles.push("text-underline-offset:0.12em");
+    }
+
+    const fontFamily = String(segment?.fontFamily || "").trim();
+
+    if (fontFamily) {
+      const safeFamily = fontFamily
+        .replace(/["'\\;]/g, "")
+        .slice(0, 80);
+
+      styles.push(
+        `font-family:"${safeFamily}","David Libre","Noto Serif Hebrew","Arial Hebrew",Arial,sans-serif`
+      );
+    }
+
+    const fontSize = Number(segment?.fontSize);
+
+    if (
+      Number.isFinite(fontSize) &&
+      fontSize >= 8 &&
+      fontSize <= 72
+    ) {
+      styles.push(`font-size:${fontSize}px`);
+    }
+
+    return styles.length
+      ? `<span style="${styles.join(";")}">${text}</span>`
+      : text;
+  }).join("");
+}
+
 function renderFaithSlide(data) {
   const faith = data?.faithCorner || {};
 
@@ -919,17 +1023,17 @@ function renderFaithSlide(data) {
     return "";
   }
 
-  const imageFile = String(
-    faith.imageFile ||
-    faith.pdfFile ||
-    ""
+  const title = String(
+    faith.title || "דקה של אמונה"
   ).trim();
 
-  if (!imageFile) {
+  const content = String(
+    faith.content || ""
+  ).trim();
+
+  if (!content) {
     return "";
   }
-
-  const imageUrl = resolveDocumentPath(imageFile);
 
   const slideSeconds =
     Number(faith.slideSeconds) > 0
@@ -941,18 +1045,20 @@ function renderFaithSlide(data) {
       class="slide faith-slide"
       data-slide-seconds="${slideSeconds}"
     >
-      <div class="slide-inner faith-slide-inner">
+      <div class="slide-inner faith-slide-inner faith-text-mode">
         <header class="faith-slide-header">
-          <div class="faith-slide-title">✨ דקה של אמונה</div>
-          <div class="faith-slide-author">מאת יניר מנשה</div>
+          <div class="faith-slide-title">
+            ✨ ${escapeHtml(title)}
+          </div>
+          <div class="faith-slide-author">
+            מאת יניר מנשה
+          </div>
         </header>
 
-        <div class="faith-image-shell">
-          <img
-            class="faith-image"
-            src="${escapeHtml(imageUrl)}"
-            alt="דקה של אמונה מאת יניר מנשה"
-          >
+        <div class="faith-text-shell">
+          <div class="faith-text-content">
+            ${renderFaithRichText(faith)}
+          </div>
         </div>
       </div>
     </section>
@@ -1252,6 +1358,7 @@ function render(data) {
 
   requestAnimationFrame(() => {
     fitCoordinatorMessageText(slideshow);
+    fitFaithText(slideshow);
 
     window.setTimeout(() => {
       fitCoordinatorMessageText(slideshow);

@@ -3211,3 +3211,115 @@ padding:14px 22px!important;overflow:hidden!important}
   justify-self: stretch !important;
   animation: none !important;
 }
+
+
+/* v85 — דקה של אמונה כטקסט אמיתי */
+.faith-slide {
+  padding: 8px 18px 6px !important;
+  overflow: hidden !important;
+}
+
+.faith-slide-inner.faith-text-mode {
+  width: min(1720px, 97vw) !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  gap: 8px !important;
+}
+
+.faith-text-mode .faith-slide-header {
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: center !important;
+}
+
+.faith-text-mode .faith-slide-title {
+  font-size: clamp(30px, 3vw, 52px) !important;
+  line-height: 1 !important;
+  font-weight: 900 !important;
+  color: #ffe36e !important;
+}
+
+.faith-text-mode .faith-slide-author {
+  margin-top: 3px !important;
+  font-size: clamp(16px, 1.35vw, 24px) !important;
+  line-height: 1 !important;
+}
+
+.faith-text-shell {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  padding: clamp(12px, 1.4vw, 22px) clamp(22px, 2.5vw, 42px) !important;
+  border: 1px solid rgba(126, 205, 255, .2) !important;
+  border-radius: 20px !important;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(18, 58, 95, .46),
+      rgba(5, 25, 43, .58)
+    ) !important;
+  box-shadow: inset 0 0 28px rgba(68, 161, 230, .06) !important;
+}
+
+.faith-text-content {
+  width: 100% !important;
+  height: auto !important;
+  margin: 0 !important;
+  color: #ffffff !important;
+  font-size: clamp(26px, 2.15vw, 38px);
+  line-height: 1.36;
+  font-weight: 700;
+  text-align: right;
+  direction: rtl;
+  white-space: normal;
+  column-count: 2;
+  column-gap: clamp(36px, 4vw, 72px);
+  column-fill: auto;
+}
+
+/* במסכים נמוכים במיוחד נשמור על קריאות */
+@media (max-height: 720px) {
+  .faith-text-content {
+    font-size: clamp(20px, 1.75vw, 30px);
+    line-height: 1.22;
+  }
+
+  .faith-text-shell {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+}
+
+
+/* v86 — Rich Text מלא בדקה של אמונה */
+.faith-text-content {
+  font-family:
+    "David Libre",
+    "Noto Serif Hebrew",
+    "Arial Hebrew",
+    Arial,
+    sans-serif;
+}
+
+.faith-text-content span {
+  white-space: inherit;
+}
+
+.faith-text-content strong,
+.faith-text-content b {
+  font-weight: 900;
+}
+
+.faith-text-content em,
+.faith-text-content i {
+  font-style: italic;
+}
+
+.faith-text-content u {
+  text-underline-offset: .12em;
+}
