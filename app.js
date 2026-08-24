@@ -806,40 +806,39 @@ function getCoordinatorTextSizeClass(content) {
 
 
 function fitFaithText(root = document) {
-  const elements = root.querySelectorAll(
-    ".faith-text-content"
-  );
+  const shells = root.querySelectorAll(".faith-text-shell");
 
-  elements.forEach(element => {
-    const container = element.closest(
-      ".faith-text-shell"
-    );
+  shells.forEach(shell => {
+    const content = shell.querySelector(".faith-text-content");
+    const columns = shell.querySelectorAll(".faith-column");
 
-    if (!container) return;
+    if (!content || !columns.length) return;
 
-    element.style.fontSize = "";
-    element.style.lineHeight = "";
+    content.style.fontSize = "";
+    content.style.lineHeight = "";
 
     let fontSize = Number.parseFloat(
-      window.getComputedStyle(element).fontSize
-    ) || 34;
+      window.getComputedStyle(content).fontSize
+    ) || 32;
 
     const minSize = 18;
 
-    const overflow = () =>
-      element.scrollHeight > container.clientHeight ||
-      element.scrollWidth > container.clientWidth;
+    const overflows = () =>
+      Array.from(columns).some(column =>
+        column.scrollHeight > content.clientHeight ||
+        column.scrollWidth > column.clientWidth
+      );
 
-    while (fontSize > minSize && overflow()) {
+    while (fontSize > minSize && overflows()) {
       fontSize -= 1;
-      element.style.fontSize = `${fontSize}px`;
+      content.style.fontSize = `${fontSize}px`;
 
       if (fontSize < 28) {
-        element.style.lineHeight = "1.28";
+        content.style.lineHeight = "1.25";
       }
 
       if (fontSize < 23) {
-        element.style.lineHeight = "1.18";
+        content.style.lineHeight = "1.16";
       }
     }
   });
@@ -954,66 +953,171 @@ function resolveDocumentPath(value) {
 }
 
 
-function renderFaithRichText(faith) {
-  const segments = Array.isArray(faith?.richText)
-    ? faith.richText
-    : [];
+function renderFaithStyledSegment(segment) {
+  const text = escapeHtml(segment?.text || "")
+    .replace(/\n/g, "<br>");
 
-  if (!segments.length) {
-    return escapeHtml(faith?.content || "")
-      .replace(/\n/g, "<br>");
+  const styles = [];
+
+  const color = String(segment?.color || "").trim();
+
+  // Google Sheets often reports ordinary text as black.
+  // On the dark TV background black is treated as the default white.
+  if (
+    /^#[0-9a-f]{6}$/i.test(color) &&
+    !["#000000", "#111111", "#222222"].includes(color.toLowerCase())
+  ) {
+    styles.push(`color:${color}`);
   }
 
-  return segments.map(segment => {
-    const text = escapeHtml(segment?.text || "")
-      .replace(/\n/g, "<br>");
+  if (segment?.bold === true) {
+    styles.push("font-weight:900");
+  }
 
-    const styles = [];
+  if (segment?.italic === true) {
+    styles.push("font-style:italic");
+  }
 
-    const color = String(segment?.color || "").trim();
-    if (/^#[0-9a-f]{6}$/i.test(color)) {
-      styles.push(`color:${color}`);
+  if (segment?.underline === true) {
+    styles.push("text-decoration:underline");
+    styles.push("text-underline-offset:0.12em");
+  }
+
+  const fontFamily = String(segment?.fontFamily || "").trim();
+
+  if (fontFamily) {
+    const safeFamily = fontFamily
+      .replace(/["'\\;]/g, "")
+      .slice(0, 80);
+
+    styles.push(
+      `font-family:"${safeFamily}","David Libre","Noto Serif Hebrew","Arial Hebrew",Arial,sans-serif`
+    );
+  }
+
+  const fontSize = Number(segment?.fontSize);
+
+  if (
+    Number.isFinite(fontSize) &&
+    fontSize >= 8 &&
+    fontSize <= 72
+  ) {
+    styles.push(`font-size:${fontSize}px`);
+  }
+
+  return styles.length
+    ? `<span style="${styles.join(";")}">${text}</span>`
+    : text;
+}
+
+function splitFaithIntoParagraphs(faith) {
+  const segments = Array.isArray(faith?.richText) && faith.richText.length
+    ? faith.richText
+    : [{ text: faith?.content || "" }];
+
+  const paragraphs = [];
+  let current = [];
+
+  segments.forEach(segment => {
+    const raw = String(segment?.text || "");
+    const parts = raw.split(/\n\s*\n/);
+
+    parts.forEach((part, index) => {
+      if (part) {
+        current.push({
+          ...segment,
+          text: part.replace(/\n/g, " ")
+        });
+      }
+
+      if (index < parts.length - 1) {
+        if (current.length) {
+          paragraphs.push(current);
+          current = [];
+        }
+      }
+    });
+  });
+
+  if (current.length) {
+    paragraphs.push(current);
+  }
+
+  // Fallback for text pasted with only single line breaks:
+  // join wrapped PDF lines and split by punctuation where practical.
+  if (paragraphs.length <= 1) {
+    const plain = String(faith?.content || "")
+      .replace(/\r/g, "")
+      .split("\n")
+      .map(line => line.trim())
+      .filter(Boolean)
+      .join(" ");
+
+    const inferred = plain
+      .split(/(?<=[.!?])\s+(?=[\u0590-\u05FF])/)
+      .map(p => p.trim())
+      .filter(Boolean);
+
+    if (inferred.length > 1) {
+      return inferred.map(text => [{ text }]);
     }
+  }
 
-    if (segment?.bold === true) {
-      styles.push("font-weight:900");
+  return paragraphs;
+}
+
+function renderFaithColumns(faith) {
+  const paragraphs = splitFaithIntoParagraphs(faith);
+
+  if (!paragraphs.length) {
+    return "";
+  }
+
+  const paragraphWeight = paragraph =>
+    paragraph.reduce(
+      (sum, segment) => sum + String(segment?.text || "").length,
+      0
+    );
+
+  const totalWeight = paragraphs.reduce(
+    (sum, paragraph) => sum + paragraphWeight(paragraph),
+    0
+  );
+
+  let running = 0;
+  let splitIndex = Math.ceil(paragraphs.length / 2);
+
+  for (let i = 0; i < paragraphs.length - 1; i += 1) {
+    running += paragraphWeight(paragraph);
+
+    if (running >= totalWeight / 2) {
+      splitIndex = i + 1;
+      break;
     }
+  }
 
-    if (segment?.italic === true) {
-      styles.push("font-style:italic");
-    }
+  const rightColumn = paragraphs.slice(0, splitIndex);
+  const leftColumn = paragraphs.slice(splitIndex);
 
-    if (segment?.underline === true) {
-      styles.push("text-decoration:underline");
-      styles.push("text-underline-offset:0.12em");
-    }
+  const renderParagraphs = list =>
+    list.map(paragraph => `
+      <p class="faith-paragraph">
+        ${paragraph.map(renderFaithStyledSegment).join("")}
+      </p>
+    `).join("");
 
-    const fontFamily = String(segment?.fontFamily || "").trim();
+  return `
+    <div class="faith-column faith-column-right">
+      ${renderParagraphs(rightColumn)}
+    </div>
+    <div class="faith-column faith-column-left">
+      ${renderParagraphs(leftColumn)}
+    </div>
+  `;
+}
 
-    if (fontFamily) {
-      const safeFamily = fontFamily
-        .replace(/["'\\;]/g, "")
-        .slice(0, 80);
-
-      styles.push(
-        `font-family:"${safeFamily}","David Libre","Noto Serif Hebrew","Arial Hebrew",Arial,sans-serif`
-      );
-    }
-
-    const fontSize = Number(segment?.fontSize);
-
-    if (
-      Number.isFinite(fontSize) &&
-      fontSize >= 8 &&
-      fontSize <= 72
-    ) {
-      styles.push(`font-size:${fontSize}px`);
-    }
-
-    return styles.length
-      ? `<span style="${styles.join(";")}">${text}</span>`
-      : text;
-  }).join("");
+function renderFaithRichText(faith) {
+  return renderFaithColumns(faith);
 }
 
 function renderFaithSlide(data) {
@@ -1056,7 +1160,7 @@ function renderFaithSlide(data) {
         </header>
 
         <div class="faith-text-shell">
-          <div class="faith-text-content">
+          <div class="faith-text-content faith-columns">
             ${renderFaithRichText(faith)}
           </div>
         </div>
