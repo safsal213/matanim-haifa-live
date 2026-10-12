@@ -1235,6 +1235,63 @@ function renderFaithSlide(data) {
   `;
 }
 
+
+// גלריית רכז נהגים: תמונות מתחלפות בתוך שקופית אחת.
+function coordinatorGalleryItems(data) {
+  return (Array.isArray(data.coordinatorImages) ? data.coordinatorImages : [])
+    .filter(item => item && item.active !== false && typeof item.url === "string" && item.url.trim())
+    .slice(0, 6)
+    .map(item => ({
+      url: item.url.trim(),
+      caption: String(item.caption || ""),
+      seconds: Math.max(2, Math.min(120, Number(item.seconds) || 6))
+    }));
+}
+
+function renderCoordinatorGallerySlide(data) {
+  const items = coordinatorGalleryItems(data);
+  if (!items.length) return "";
+  const duration = items.reduce((sum, item) => sum + item.seconds, 0);
+  return `
+    <section class="slide coordinator-gallery-slide" data-slide-seconds="${duration}">
+      <div class="coordinator-gallery-header">📷 עדכונים בתמונות · רכז הנהגים</div>
+      <div class="coordinator-gallery-stage">
+        ${items.map((item, i) => `
+          <figure class="coordinator-gallery-frame${i === 0 ? " is-visible" : ""}" data-seconds="${item.seconds}">
+            <img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.caption || "תמונה מטעם רכז הנהגים")}" loading="${i === 0 ? "eager" : "lazy"}">
+            ${item.caption ? `<figcaption>${escapeHtml(item.caption)}</figcaption>` : ""}
+          </figure>
+        `).join("")}
+      </div>
+      <div class="coordinator-gallery-progress">1 / ${items.length}</div>
+    </section>`;
+}
+
+let coordinatorGalleryTimer = null;
+function stopCoordinatorGallery() {
+  if (coordinatorGalleryTimer !== null) {
+    clearTimeout(coordinatorGalleryTimer);
+    coordinatorGalleryTimer = null;
+  }
+}
+function startCoordinatorGallery(slide) {
+  stopCoordinatorGallery();
+  const frames = Array.from(slide.querySelectorAll(".coordinator-gallery-frame"));
+  if (!frames.length) return;
+  let index = 0;
+  const show = () => {
+    if (!slide.classList.contains("active")) return;
+    frames.forEach((frame, i) => frame.classList.toggle("is-visible", i === index));
+    const progress = slide.querySelector(".coordinator-gallery-progress");
+    if (progress) progress.textContent = `${index + 1} / ${frames.length}`;
+    const ms = Math.max(2, Number(frames[index].dataset.seconds) || 6) * 1000;
+    if (index < frames.length - 1) {
+      coordinatorGalleryTimer = setTimeout(() => { index++; show(); }, ms);
+    }
+  };
+  show();
+}
+
 function buildSlides(data) {
   const s = data.settings || {};
   const smileTitle = getSmileTitle(s);
@@ -1480,6 +1537,7 @@ function buildSlides(data) {
         </div>
       </section>
     `,
+    renderCoordinatorGallerySlide(data),
     renderAnnouncementSlide(data),
     `
       <section class="slide">
@@ -1587,6 +1645,7 @@ function showNextSlide() {
   const slides = document.querySelectorAll(".slide");
   if (!slides.length) return;
 
+  stopCoordinatorGallery();
   slides[currentSlide].classList.remove("active");
   currentSlide = (currentSlide + 1) % slides.length;
   slides[currentSlide].classList.add("active");
@@ -1662,6 +1721,7 @@ function restartSlideTimer() {
   }
 
   const activeSlide = document.querySelector(".slide.active");
+  if (activeSlide?.classList.contains("coordinator-gallery-slide")) startCoordinatorGallery(activeSlide);
   const smileVideo = activeSlide?.querySelector(".smile-video");
 
   // בפינת החיוך: הסרטון מוצג עד סופו, אך לא מעבר לזמן המקסימלי שהוגדר.

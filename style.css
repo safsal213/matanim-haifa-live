@@ -3687,3 +3687,28 @@ body.faith-mode-active
   font-size: inherit !important;
   line-height: inherit !important;
 }
+
+/* v95: coordinator gallery; isolated from other slides */
+.coordinator-gallery-slide .coordinator-gallery-header {
+  position:absolute; top:3%; left:0; right:0; text-align:center;
+  font-weight:800; font-size:clamp(20px,2.1vw,34px); color:#f8d76c;
+}
+.coordinator-gallery-slide .coordinator-gallery-stage {
+  position:absolute; inset:12% 3% 8%; overflow:hidden;
+}
+.coordinator-gallery-slide .coordinator-gallery-frame {
+  position:absolute; inset:0; margin:0; opacity:0; visibility:hidden;
+  transition:opacity .65s ease; display:flex; align-items:center; justify-content:center;
+}
+.coordinator-gallery-slide .coordinator-gallery-frame.is-visible {opacity:1; visibility:visible;}
+.coordinator-gallery-slide .coordinator-gallery-frame img {
+  display:block; width:100%; height:100%; object-fit:contain;
+}
+.coordinator-gallery-slide .coordinator-gallery-frame:has(figcaption) img {height:calc(100% - 44px);}
+.coordinator-gallery-slide figcaption {
+  position:absolute; bottom:0; left:0; right:0; text-align:center;
+  color:white; font-size:clamp(15px,1.5vw,24px);
+}
+.coordinator-gallery-slide .coordinator-gallery-progress {
+  position:absolute; bottom:2%; left:3%; color:#b6d7f3; font-size:14px;
+}
