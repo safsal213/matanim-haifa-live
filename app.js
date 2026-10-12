@@ -1242,10 +1242,30 @@ function coordinatorGalleryItems(data) {
     .filter(item => item && item.active !== false && typeof item.url === "string" && item.url.trim())
     .slice(0, 6)
     .map(item => ({
-      url: item.url.trim(),
+      url: resolveMediaPath(item.url.trim(), "images"),
       caption: String(item.caption || ""),
       seconds: Math.max(2, Math.min(120, Number(item.seconds) || 6))
     }));
+}
+
+// Prefetch all active gallery images immediately after Sheets data arrives.
+// The worker stores these in a dedicated persistent cache, including images
+// hosted on another origin when the image server permits opaque responses.
+function preloadCoordinatorGalleryImages(data) {
+  const urls = [...new Set(coordinatorGalleryItems(data).map(item =>
+    resolveMediaPath(item.url, "images")
+  ))];
+  if (!urls.length) return;
+  const send = worker => worker.postMessage({
+    type: "PREFETCH_COORDINATOR_IMAGES",
+    urls
+  });
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.ready.then(registration => {
+      const worker = navigator.serviceWorker.controller || registration.active;
+      if (worker) send(worker);
+    }).catch(error => console.warn("Gallery offline prefetch:", error));
+  }
 }
 
 function renderCoordinatorGallerySlide(data) {
@@ -1580,6 +1600,7 @@ function renderOnlyIfChanged(data) {
 
 function render(data) {
   appData = data;
+  preloadCoordinatorGalleryImages(data);
   currentSlide = 0;
 
   slideshow.innerHTML = buildSlides(data).join("");
@@ -1920,6 +1941,7 @@ async function refreshData(options = {}) {
       : await loadBundledSample();
 
     saveLocal(data);
+    preloadCoordinatorGalleryImages(data);
     renderOnlyIfChanged(data);
     consecutiveDataFailures = 0;
     setConnectionState(true, false);

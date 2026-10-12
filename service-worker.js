@@ -1,4 +1,4 @@
-const CACHE_NAME = "matanim-haifa-live-v95";
+const CACHE_NAME = "matanim-haifa-live-v96";
 
 const APP_FILES = [
   "./",
@@ -12,6 +12,37 @@ const APP_FILES = [
   "./videos/brko.mp4"
 ];
 
+
+// Gallery cache survives ordinary application-shell version updates.
+const GALLERY_CACHE = "matanim-haifa-coordinator-images-v1";
+
+self.addEventListener("message", event => {
+  if (!event.data || event.data.type !== "PREFETCH_COORDINATOR_IMAGES") return;
+  const urls = Array.isArray(event.data.urls) ? event.data.urls.slice(0, 6) : [];
+  event.waitUntil((async () => {
+    const cache = await caches.open(GALLERY_CACHE);
+    const keep = new Set();
+    for (const raw of urls) {
+      try {
+        const url = new URL(raw, self.registration.scope);
+        if (!/^https?:$/.test(url.protocol)) continue;
+        keep.add(url.href);
+        const request = new Request(url.href, {mode: "no-cors", credentials: "omit"});
+        // Fetch again when online so changed images at the same URL update.
+        const response = await fetch(request);
+        if (response && (response.ok || response.type === "opaque")) {
+          await cache.put(url.href, response);
+        }
+      } catch (error) {
+        console.warn("Could not cache gallery image", raw, error);
+      }
+    }
+    // Remove only outdated gallery images, not other offline resources.
+    const existing = await cache.keys();
+    await Promise.all(existing.filter(req => !keep.has(req.url)).map(req => cache.delete(req)));
+  })());
+});
+
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(APP_FILES))
@@ -24,7 +55,7 @@ self.addEventListener("activate", event => {
     caches.keys().then(keys =>
       Promise.all(
         keys
-          .filter(key => key !== CACHE_NAME)
+          .filter(key => key !== CACHE_NAME && key !== GALLERY_CACHE)
           .map(key => caches.delete(key))
       )
     )
@@ -130,6 +161,16 @@ self.addEventListener("fetch", event => {
   const request = event.request;
 
   if (request.method !== "GET") {
+    return;
+  }
+
+  if (request.destination === "image") {
+    event.respondWith((async () => {
+      const gallery = await caches.open(GALLERY_CACHE);
+      const cached = await gallery.match(request.url);
+      if (cached) return cached;
+      return fetch(request);
+    })());
     return;
   }
 
