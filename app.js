@@ -596,7 +596,7 @@ function startAnnouncementRotation(slide) {
 
 function getSmileContentType(value) {
   const v = String(value || "").trim();
-  if (/\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(v)) return "video";
+  if (/\.(mp4|webm|ogg|mov)(?:[?#].*)?$/i.test(v)) return "video";
   if (/\.(png|jpe?g|webp|gif)(?:[?#].*)?$/i.test(v)) return "image";
   return "text";
 }
@@ -638,6 +638,7 @@ function renderSmileContent(value) {
           disablepictureinpicture
         ></video>
 
+        <button type="button" class="smile-play-button" hidden>▶ הפעלת הסרטון</button>
         <div class="smile-video-error" hidden>
           😄 לא ניתן לטעון את הסרטון
         </div>
@@ -676,6 +677,14 @@ function prepareSmileVideo(video) {
   if (!frame) return;
 
   const errorBox = frame.querySelector(".smile-video-error");
+  const playButton = frame.querySelector(".smile-play-button");
+  if (playButton) playButton.addEventListener("click", () => {
+    video.muted = true;
+    video.play().then(() => { playButton.hidden = true; }).catch(() => {
+      playButton.hidden = false;
+    });
+  });
+  video.addEventListener("playing", () => { if (playButton) playButton.hidden = true; });
 
   const applyLayout = () => {
     const width = Number(video.videoWidth) || 0;
@@ -759,6 +768,8 @@ function setSmileVideoPlayback(activeSlide) {
       ) {
         playPromise.catch(error => {
           console.warn("הפעלת הסרטון נכשלה:", error);
+          const button = video.closest(".smile-media-frame")?.querySelector(".smile-play-button");
+          if (button && document.querySelector(".smile-slide.active")?.contains(video)) button.hidden = false;
         });
       }
     } else {
@@ -851,7 +862,7 @@ function fitFaithText(root = document) {
       return;
     }
 
-    let fontSize = Math.min(44, Math.max(28, Math.round(window.innerHeight * 0.036)));
+    let fontSize = Math.min(64, Math.max(32, Math.round(window.innerHeight * 0.05)));
     const minimumFontSize = 16;
 
     const applySize = function(size) {
@@ -1135,8 +1146,28 @@ function splitFaithIntoParagraphs(faith) {
 // Split styled text at the nearest word boundary to the midpoint.
 // Slicing the original runs preserves bold, colors and links.
 function faithPages(faith) {
-  const runs = Array.isArray(faith.richText) && faith.richText.length
+  const sourceRuns = Array.isArray(faith.richText) && faith.richText.length
     ? faith.richText : [{text: faith.content || ""}];
+  // Sheets/PDF text often contains hard wraps from a narrow source column.
+  // Reflow single line breaks across styled runs, retaining paragraph breaks.
+  const sourceText = sourceRuns.map(run => String(run.text || "")).join("");
+  const replacements = new Map();
+  for (const match of sourceText.matchAll(/\r?\n(?:[ \t]*\r?\n)*/g)) {
+    const paragraphBreak = (match[0].match(/\n/g) || []).length > 1;
+    for (let i = 0; i < match[0].length; i++) {
+      replacements.set(match.index + i, i === 0 ? (paragraphBreak ? "\n\n" : " ") : "");
+    }
+  }
+  let sourceOffset = 0;
+  const runs = sourceRuns.map(run => {
+    const value = String(run.text || "");
+    const text = Array.from({length: value.length}, (_, i) => {
+      const index = sourceOffset + i;
+      return replacements.has(index) ? replacements.get(index) : value[i];
+    }).join("");
+    sourceOffset += value.length;
+    return {...run, text};
+  });
   const text = runs.map(run => String(run.text || "")).join("");
   if (text.length < 700) return [runs];
   const middle = Math.floor(text.length / 2);
@@ -1989,7 +2020,13 @@ window.addEventListener("offline", () => {
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("service-worker.js").catch(console.error);
+    const wasControlled = Boolean(navigator.serviceWorker.controller);
+    let reloading = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (wasControlled && !reloading) { reloading = true; location.reload(); }
+    });
+    navigator.serviceWorker.register("service-worker.js", { updateViaCache: "none" })
+      .then(registration => registration.update()).catch(console.error);
   });
 }
 

@@ -1,15 +1,13 @@
-const CACHE_NAME = "matanim-haifa-live-v97";
+const CACHE_NAME = "matanim-haifa-live-v99";
 
 const APP_FILES = [
   "./",
   "./index.html",
-  "./style.css",
-  "./app.js",
-  "./config.js",
+  "./style.css?v=99",
+  "./app.js?v=99",
+  "./config.js?v=99",
   "./data.example.json",
-  "./manifest.webmanifest",
-  "./videos/logo.mp4",
-  "./videos/Brko.mp4"
+  "./manifest.webmanifest"
 ];
 
 
@@ -55,7 +53,7 @@ self.addEventListener("activate", event => {
     caches.keys().then(keys =>
       Promise.all(
         keys
-          .filter(key => key !== CACHE_NAME && key !== GALLERY_CACHE)
+          .filter(key => key.startsWith("matanim-haifa-live-") && key !== CACHE_NAME && key !== GALLERY_CACHE)
           .map(key => caches.delete(key))
       )
     )
@@ -79,84 +77,6 @@ function isVideoRequest(request) {
   }
 }
 
-async function getCachedFullVideo(request) {
-  const cache = await caches.open(CACHE_NAME);
-  const cacheKey = new Request(request.url, {
-    method: "GET",
-    credentials: "same-origin"
-  });
-
-  let response = await cache.match(cacheKey);
-
-  if (response) {
-    return response;
-  }
-
-  // Only use network when no local copy exists yet.
-  response = await fetch(cacheKey);
-
-  if (response && response.ok && response.status === 200) {
-    await cache.put(cacheKey, response.clone());
-  }
-
-  return response;
-}
-
-async function handleCachedVideoRange(request) {
-  const fullResponse = await getCachedFullVideo(request);
-
-  if (!fullResponse || !fullResponse.ok) {
-    return fullResponse || Response.error();
-  }
-
-  const rangeHeader = request.headers.get("range");
-
-  if (!rangeHeader) {
-    return fullResponse;
-  }
-
-  const match = /^bytes=(\d+)-(\d*)$/i.exec(rangeHeader);
-
-  if (!match) {
-    return fullResponse;
-  }
-
-  const blob = await fullResponse.blob();
-  const totalSize = blob.size;
-  const start = Number(match[1]);
-  const requestedEnd = match[2] ? Number(match[2]) : totalSize - 1;
-  const end = Math.min(requestedEnd, totalSize - 1);
-
-  if (
-    !Number.isFinite(start) ||
-    !Number.isFinite(end) ||
-    start < 0 ||
-    start > end ||
-    start >= totalSize
-  ) {
-    return new Response(null, {
-      status: 416,
-      headers: {
-        "Content-Range": `bytes */${totalSize}`
-      }
-    });
-  }
-
-  const chunk = blob.slice(start, end + 1, blob.type || "video/mp4");
-
-  return new Response(chunk, {
-    status: 206,
-    statusText: "Partial Content",
-    headers: {
-      "Content-Type": blob.type || "video/mp4",
-      "Content-Length": String(chunk.size),
-      "Content-Range": `bytes ${start}-${end}/${totalSize}`,
-      "Accept-Ranges": "bytes",
-      "Cache-Control": "public, max-age=31536000, immutable"
-    }
-  });
-}
-
 self.addEventListener("fetch", event => {
   const request = event.request;
 
@@ -175,9 +95,30 @@ self.addEventListener("fetch", event => {
   }
 
   if (isVideoRequest(request)) {
-    event.respondWith(
-      handleCachedVideoRange(request).catch(() => caches.match(request))
-    );
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  const url = new URL(request.url);
+  const appShell = url.origin === self.location.origin &&
+    (request.mode === "navigate" || /\.(?:js|css|webmanifest)$/.test(url.pathname));
+  if (appShell) {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE_NAME);
+      try {
+        const response = await fetch(request, {cache: "no-cache"});
+        if (response.ok) {
+          await cache.put(request, response.clone());
+          return response;
+        }
+        return (await cache.match(request)) || response;
+      } catch (error) {
+        const cached = await cache.match(request);
+        if (cached) return cached;
+        if (request.mode === "navigate") return (await cache.match("./index.html")) || Response.error();
+        return Response.error();
+      }
+    })());
     return;
   }
 

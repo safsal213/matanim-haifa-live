@@ -3729,3 +3729,24 @@ body.faith-mode-active .faith-text-content.faith-columns {
   overflow-wrap: anywhere;
 }
 .faith-text-content .faith-paragraph { white-space: pre-wrap; }
+
+.smile-play-button { position:absolute; z-index:5; left:50%; top:50%; transform:translate(-50%,-50%); padding:18px 30px; font:700 26px sans-serif; border-radius:12px; border:0; background:#f8d76c; color:#102030; cursor:pointer; }
+.smile-play-button[hidden] { display:none !important; }
+
+/* v99: let imported hard-wrapped text reflow across the whole page. */
+body.faith-mode-active .faith-slide .faith-text-shell,
+body.faith-mode-active .faith-slide .faith-text-content,
+body.faith-mode-active .faith-slide .faith-column,
+body.faith-mode-active .faith-slide .faith-paragraph {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+}
+body.faith-mode-active .faith-slide .faith-text-content {
+  display: block !important;
+  columns: auto !important;
+  grid-template-areas: none !important;
+  gap: 0 !important;
+}
+body.faith-mode-active .faith-slide .faith-paragraph { white-space: normal !important; text-align: right; }
