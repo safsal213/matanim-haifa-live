@@ -851,7 +851,7 @@ function fitFaithText(root = document) {
       return;
     }
 
-    let fontSize = 24;
+    let fontSize = Math.min(44, Math.max(28, Math.round(window.innerHeight * 0.036)));
     const minimumFontSize = 16;
 
     const applySize = function(size) {
@@ -1132,58 +1132,33 @@ function splitFaithIntoParagraphs(faith) {
   return paragraphs;
 }
 
-function renderFaithColumns(faith) {
-  const paragraphs = splitFaithIntoParagraphs(faith);
-
-  if (!paragraphs.length) {
-    return "";
+// Split styled text at the nearest word boundary to the midpoint.
+// Slicing the original runs preserves bold, colors and links.
+function faithPages(faith) {
+  const runs = Array.isArray(faith.richText) && faith.richText.length
+    ? faith.richText : [{text: faith.content || ""}];
+  const text = runs.map(run => String(run.text || "")).join("");
+  if (text.length < 700) return [runs];
+  const middle = Math.floor(text.length / 2);
+  let cut = middle;
+  for (let distance = 0; distance < middle; distance++) {
+    if (/\s/.test(text[middle + distance] || "")) { cut = middle + distance + 1; break; }
+    if (/\s/.test(text[middle - distance] || "")) { cut = middle - distance + 1; break; }
   }
-
-  const paragraphWeight = paragraph =>
-    paragraph.reduce(
-      (sum, segment) => sum + String((segment && segment.text) || "").length,
-      0
-    );
-
-  const totalWeight = paragraphs.reduce(
-    (sum, paragraph) => sum + paragraphWeight(paragraph),
-    0
-  );
-
-  let running = 0;
-  let splitIndex = Math.ceil(paragraphs.length / 2);
-
-  for (let i = 0; i < paragraphs.length - 1; i += 1) {
-    running += paragraphWeight(paragraphs[i]);
-
-    if (running >= totalWeight / 2) {
-      splitIndex = i + 1;
-      break;
-    }
-  }
-
-  const rightColumn = paragraphs.slice(0, splitIndex);
-  const leftColumn = paragraphs.slice(splitIndex);
-
-  const renderParagraphs = list =>
-    list.map(paragraph => `
-      <p class="faith-paragraph">
-        ${paragraph.map(renderFaithStyledSegment).join("")}
-      </p>
-    `).join("");
-
-  return `
-    <div class="faith-column faith-column-right">
-      ${renderParagraphs(rightColumn)}
-    </div>
-    <div class="faith-column faith-column-left">
-      ${renderParagraphs(leftColumn)}
-    </div>
-  `;
+  const pages = [[], []];
+  let offset = 0;
+  runs.forEach(run => {
+    const value = String(run.text || "");
+    const boundary = Math.max(0, Math.min(value.length, cut - offset));
+    if (boundary) pages[0].push({...run, text: value.slice(0, boundary)});
+    if (boundary < value.length) pages[1].push({...run, text: value.slice(boundary)});
+    offset += value.length;
+  });
+  return pages;
 }
 
-function renderFaithRichText(faith) {
-  return renderFaithColumns(faith);
+function renderFaithPage(runs) {
+  return `<div class="faith-column faith-column-right"><p class="faith-paragraph">${runs.map(renderFaithStyledSegment).join("")}</p></div>`;
 }
 
 function renderFaithSlide(data) {
@@ -1210,7 +1185,8 @@ function renderFaithSlide(data) {
       ? Number(faith.slideSeconds)
       : 45;
 
-  return `
+  const pages = faithPages(faith);
+  return pages.map((runs, pageIndex) => `
     <section
       class="slide faith-slide"
       data-slide-seconds="${slideSeconds}"
@@ -1218,7 +1194,7 @@ function renderFaithSlide(data) {
       <div class="slide-inner faith-slide-inner faith-text-mode">
         <header class="faith-slide-header">
           <div class="faith-slide-title">
-            ✨ ${escapeHtml(title)}
+            ✨ ${escapeHtml(title)}${pages.length > 1 ? ` — ${pageIndex + 1}/2` : ""}
           </div>
           <div class="faith-slide-author">
             מאת יניר מנשה
@@ -1227,12 +1203,12 @@ function renderFaithSlide(data) {
 
         <div class="faith-text-shell">
           <div class="faith-text-content faith-columns">
-            ${renderFaithRichText(faith)}
+            ${renderFaithPage(runs)}
           </div>
         </div>
       </div>
     </section>
-  `;
+  `).join("");
 }
 
 

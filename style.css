@@ -3712,3 +3712,20 @@ body.faith-mode-active
 .coordinator-gallery-slide .coordinator-gallery-progress {
   position:absolute; bottom:2%; left:3%; color:#b6d7f3; font-size:14px;
 }
+
+/* Single full-width page per faith slide. */
+.faith-text-content.faith-columns,
+body.faith-mode-active .faith-text-content.faith-columns {
+  display: block !important;
+  grid-template-columns: none !important;
+  direction: rtl;
+  overflow: hidden !important;
+}
+.faith-text-content .faith-column-right {
+  width: 100% !important;
+  grid-area: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  overflow-wrap: anywhere;
+}
+.faith-text-content .faith-paragraph { white-space: pre-wrap; }

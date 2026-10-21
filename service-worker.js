@@ -1,4 +1,4 @@
-const CACHE_NAME = "matanim-haifa-live-v96";
+const CACHE_NAME = "matanim-haifa-live-v97";
 
 const APP_FILES = [
   "./",
@@ -9,7 +9,7 @@ const APP_FILES = [
   "./data.example.json",
   "./manifest.webmanifest",
   "./videos/logo.mp4",
-  "./videos/brko.mp4"
+  "./videos/Brko.mp4"
 ];
 
 
@@ -73,7 +73,7 @@ function isPdfRequest(request) {
 
 function isVideoRequest(request) {
   try {
-    return /\.(mp4|webm|ogg)$/i.test(new URL(request.url).pathname);
+    return /\.(mp4|webm|ogg|mov)$/i.test(new URL(request.url).pathname);
   } catch {
     return false;
   }
