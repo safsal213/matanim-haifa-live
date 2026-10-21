@@ -1,0 +1,6 @@
+ב-Apps Script, בתוך אובייקט settings שמוחזר ב-JSON, הוסף:
+
+smileVideoMaxSeconds:
+  Number(rawSettings['זמן_מקסימלי_לסרטון']) || 30,
+
+ודא שיש פסיק לפני/אחרי השדה בהתאם למיקום שלו באובייקט.
