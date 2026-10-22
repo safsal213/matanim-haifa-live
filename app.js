@@ -1172,7 +1172,12 @@ function faithPages(faith) {
   if (text.length < 700) return [runs];
   const middle = Math.floor(text.length / 2);
   let cut = middle;
-  for (let distance = 0; distance < middle; distance++) {
+  const paragraphCuts = Array.from(text.matchAll(/\n\n/g), match => match.index + 2)
+    .filter(index => text.slice(0, index).trim() && text.slice(index).trim());
+  if (paragraphCuts.length) {
+    cut = paragraphCuts.reduce((best, index) =>
+      Math.abs(index - middle) < Math.abs(best - middle) ? index : best);
+  } else for (let distance = 0; distance < middle; distance++) {
     if (/\s/.test(text[middle + distance] || "")) { cut = middle + distance + 1; break; }
     if (/\s/.test(text[middle - distance] || "")) { cut = middle - distance + 1; break; }
   }
@@ -1189,7 +1194,30 @@ function faithPages(faith) {
 }
 
 function renderFaithPage(runs) {
-  return `<div class="faith-column faith-column-right"><p class="faith-paragraph">${runs.map(renderFaithStyledSegment).join("")}</p></div>`;
+  // Build actual paragraph elements, retaining styling even across run boundaries.
+  const text = runs.map(run => String(run.text || "")).join("");
+  const paragraphs = [];
+  let start = 0;
+  const appendParagraph = end => {
+    let offset = 0;
+    const segments = [];
+    runs.forEach(run => {
+      const value = String(run.text || "");
+      const from = Math.max(0, start - offset);
+      const to = Math.min(value.length, end - offset);
+      if (to > from) segments.push({...run, text: value.slice(from, to)});
+      offset += value.length;
+    });
+    if (segments.some(run => run.text.trim())) paragraphs.push(segments);
+  };
+  for (const match of text.matchAll(/\n\n+/g)) {
+    appendParagraph(match.index);
+    start = match.index + match[0].length;
+  }
+  appendParagraph(text.length);
+  return `<div class="faith-column faith-column-right">${paragraphs.map(paragraph =>
+    `<p class="faith-paragraph">${paragraph.map(renderFaithStyledSegment).join("")}</p>`
+  ).join("")}</div>`;
 }
 
 function renderFaithSlide(data) {
