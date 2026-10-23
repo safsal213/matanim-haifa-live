@@ -638,7 +638,6 @@ function renderSmileContent(value) {
           disablepictureinpicture
         ></video>
 
-        <button type="button" class="smile-play-button" hidden>▶ הפעלת הסרטון</button>
         <div class="smile-video-error" hidden>
           😄 לא ניתן לטעון את הסרטון
         </div>
@@ -677,15 +676,6 @@ function prepareSmileVideo(video) {
   if (!frame) return;
 
   const errorBox = frame.querySelector(".smile-video-error");
-  const playButton = frame.querySelector(".smile-play-button");
-  if (playButton) playButton.addEventListener("click", () => {
-    video.muted = true;
-    video.play().then(() => { playButton.hidden = true; }).catch(() => {
-      playButton.hidden = false;
-    });
-  });
-  video.addEventListener("playing", () => { if (playButton) playButton.hidden = true; });
-
   const applyLayout = () => {
     const width = Number(video.videoWidth) || 0;
     const height = Number(video.videoHeight) || 0;
@@ -753,6 +743,9 @@ function setSmileVideoPlayback(activeSlide) {
     if (shouldPlay) {
       document.body.classList.add("smile-video-playing");
       video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
+      video.controls = false;
 
       try {
         if (video.ended || video.currentTime > 0.15) {
@@ -768,8 +761,6 @@ function setSmileVideoPlayback(activeSlide) {
       ) {
         playPromise.catch(error => {
           console.warn("הפעלת הסרטון נכשלה:", error);
-          const button = video.closest(".smile-media-frame")?.querySelector(".smile-play-button");
-          if (button && document.querySelector(".smile-slide.active")?.contains(video)) button.hidden = false;
         });
       }
     } else {
