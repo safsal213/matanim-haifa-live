@@ -1624,9 +1624,21 @@ function renderOnlyIfChanged(data) {
   return true;
 }
 
+function preloadSmileVideo(data) {
+  const value = String(data?.settings?.smileCorner || "").trim();
+  if (getSmileContentType(value) !== "video" || !("serviceWorker" in navigator)) return;
+  // Download the entire selected movie before its slide comes around.
+  const url = new URL(resolveSmileMediaPath(value), document.baseURI).href;
+  navigator.serviceWorker.ready.then(registration => {
+    const worker = navigator.serviceWorker.controller || registration.active;
+    if (worker) worker.postMessage({type: "PREFETCH_SMILE_VIDEO", url});
+  }).catch(error => console.warn("Smile offline prefetch:", error));
+}
+
 function render(data) {
   appData = data;
   preloadCoordinatorGalleryImages(data);
+  preloadSmileVideo(data);
   currentSlide = 0;
 
   slideshow.innerHTML = buildSlides(data).join("");
