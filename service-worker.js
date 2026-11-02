@@ -1,75 +1,20 @@
-const CACHE_NAME = "matanim-haifa-live-v102";
+const CACHE_NAME = "matanim-haifa-live-v97";
 
 const APP_FILES = [
   "./",
   "./index.html",
-  "./style.css?v=102",
-  "./app.js?v=102",
-  "./config.js?v=102",
+  "./style.css",
+  "./app.js",
+  "./config.js",
   "./data.example.json",
-  "./manifest.webmanifest"
+  "./manifest.webmanifest",
+  "./videos/logo.mp4",
+  "./videos/brko.mp4"
 ];
 
 
 // Gallery cache survives ordinary application-shell version updates.
 const GALLERY_CACHE = "matanim-haifa-coordinator-images-v1";
-// Keep complete movies independently of application-shell updates.
-const VIDEO_CACHE = "matanim-haifa-videos-v1";
-const videoDownloads = new Map();
-
-function downloadFullVideo(raw) {
-  const url = new URL(raw, self.registration.scope);
-  if (url.origin !== self.location.origin || !isVideoRequest({url: url.href})) {
-    return Promise.reject(new Error("Offline video must be hosted with this site"));
-  }
-  if (videoDownloads.has(url.href)) return videoDownloads.get(url.href);
-  const download = (async () => {
-    // Never save a 206 response: a browser's buffered chunk is not a full movie.
-    const response = await fetch(url.href, {cache: "no-cache"});
-    if (response.status !== 200 || response.headers.has("Content-Range")) {
-      throw new Error("Complete video response required");
-    }
-    const blob = await response.blob();
-    if (blob.size < 16) throw new Error("Empty or invalid video");
-    const headers = new Headers(response.headers);
-    headers.delete("Content-Encoding");
-    headers.set("Content-Length", String(blob.size));
-    headers.set("Accept-Ranges", "bytes");
-    const cache = await caches.open(VIDEO_CACHE);
-    await cache.put(url.href, new Response(blob, {status: 200, headers}));
-  })().finally(() => videoDownloads.delete(url.href));
-  videoDownloads.set(url.href, download);
-  return download;
-}
-
-async function cachedVideoResponse(request) {
-  const cache = await caches.open(VIDEO_CACHE);
-  const full = await cache.match(request.url);
-  if (!full) return null;
-  const range = request.headers.get("range");
-  if (!range) return full;
-  const match = /^bytes=(\d*)-(\d*)$/i.exec(range.trim());
-  if (!match || (!match[1] && !match[2])) return full;
-  const blob = await full.blob();
-  const total = blob.size;
-  const start = match[1] ? Number(match[1]) : Math.max(0, total - Number(match[2]));
-  const end = match[1] && match[2] ? Math.min(Number(match[2]), total - 1) : total - 1;
-  if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start > end || start >= total) {
-    return new Response(null, {status: 416, headers: {"Content-Range": `bytes */${total}`}});
-  }
-  const headers = new Headers(full.headers);
-  headers.set("Content-Range", `bytes ${start}-${end}/${total}`);
-  headers.set("Content-Length", String(end - start + 1));
-  return new Response(blob.slice(start, end + 1, blob.type), {status: 206, headers});
-}
-
-self.addEventListener("message", event => {
-  if (event.data?.type !== "PREFETCH_SMILE_VIDEO" || typeof event.data.url !== "string") return;
-  event.waitUntil(downloadFullVideo(event.data.url).catch(error => {
-    // A failed refresh leaves the last complete local copy available.
-    console.warn("Could not save offline smile video", error);
-  }));
-});
 
 self.addEventListener("message", event => {
   if (!event.data || event.data.type !== "PREFETCH_COORDINATOR_IMAGES") return;
@@ -110,7 +55,7 @@ self.addEventListener("activate", event => {
     caches.keys().then(keys =>
       Promise.all(
         keys
-          .filter(key => key.startsWith("matanim-haifa-live-") && key !== CACHE_NAME && key !== GALLERY_CACHE)
+          .filter(key => key !== CACHE_NAME && key !== GALLERY_CACHE)
           .map(key => caches.delete(key))
       )
     )
@@ -128,10 +73,88 @@ function isPdfRequest(request) {
 
 function isVideoRequest(request) {
   try {
-    return /\.(mp4|webm|ogg|mov)$/i.test(new URL(request.url).pathname);
+    return /\.(mp4|webm|ogg)$/i.test(new URL(request.url).pathname);
   } catch {
     return false;
   }
+}
+
+async function getCachedFullVideo(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cacheKey = new Request(request.url, {
+    method: "GET",
+    credentials: "same-origin"
+  });
+
+  let response = await cache.match(cacheKey);
+
+  if (response) {
+    return response;
+  }
+
+  // Only use network when no local copy exists yet.
+  response = await fetch(cacheKey);
+
+  if (response && response.ok && response.status === 200) {
+    await cache.put(cacheKey, response.clone());
+  }
+
+  return response;
+}
+
+async function handleCachedVideoRange(request) {
+  const fullResponse = await getCachedFullVideo(request);
+
+  if (!fullResponse || !fullResponse.ok) {
+    return fullResponse || Response.error();
+  }
+
+  const rangeHeader = request.headers.get("range");
+
+  if (!rangeHeader) {
+    return fullResponse;
+  }
+
+  const match = /^bytes=(\d+)-(\d*)$/i.exec(rangeHeader);
+
+  if (!match) {
+    return fullResponse;
+  }
+
+  const blob = await fullResponse.blob();
+  const totalSize = blob.size;
+  const start = Number(match[1]);
+  const requestedEnd = match[2] ? Number(match[2]) : totalSize - 1;
+  const end = Math.min(requestedEnd, totalSize - 1);
+
+  if (
+    !Number.isFinite(start) ||
+    !Number.isFinite(end) ||
+    start < 0 ||
+    start > end ||
+    start >= totalSize
+  ) {
+    return new Response(null, {
+      status: 416,
+      headers: {
+        "Content-Range": `bytes */${totalSize}`
+      }
+    });
+  }
+
+  const chunk = blob.slice(start, end + 1, blob.type || "video/mp4");
+
+  return new Response(chunk, {
+    status: 206,
+    statusText: "Partial Content",
+    headers: {
+      "Content-Type": blob.type || "video/mp4",
+      "Content-Length": String(chunk.size),
+      "Content-Range": `bytes ${start}-${end}/${totalSize}`,
+      "Accept-Ranges": "bytes",
+      "Cache-Control": "public, max-age=31536000, immutable"
+    }
+  });
 }
 
 self.addEventListener("fetch", event => {
@@ -152,46 +175,9 @@ self.addEventListener("fetch", event => {
   }
 
   if (isVideoRequest(request)) {
-    // Start a full background download even when playback only requests a range.
-    // Complete cached movies can answer Safari/TV byte-range requests offline.
-    event.waitUntil((async () => {
-      const cache = await caches.open(VIDEO_CACHE);
-      if (!(await cache.match(request.url))) await downloadFullVideo(request.url);
-    })().catch(() => {}));
-    event.respondWith((async () => {
-      const cached = await cachedVideoResponse(request);
-      if (cached) return cached;
-      try {
-        return await fetch(request);
-      } catch (error) {
-        const download = videoDownloads.get(request.url);
-        if (download) await download.catch(() => {});
-        return (await cachedVideoResponse(request)) || Response.error();
-      }
-    })());
-    return;
-  }
-
-  const url = new URL(request.url);
-  const appShell = url.origin === self.location.origin &&
-    (request.mode === "navigate" || /\.(?:js|css|webmanifest)$/.test(url.pathname));
-  if (appShell) {
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE_NAME);
-      try {
-        const response = await fetch(request, {cache: "no-cache"});
-        if (response.ok) {
-          await cache.put(request, response.clone());
-          return response;
-        }
-        return (await cache.match(request)) || response;
-      } catch (error) {
-        const cached = await cache.match(request);
-        if (cached) return cached;
-        if (request.mode === "navigate") return (await cache.match("./index.html")) || Response.error();
-        return Response.error();
-      }
-    })());
+    event.respondWith(
+      handleCachedVideoRange(request).catch(() => caches.match(request))
+    );
     return;
   }
 
