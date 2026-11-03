@@ -596,7 +596,7 @@ function startAnnouncementRotation(slide) {
 
 function getSmileContentType(value) {
   const v = String(value || "").trim();
-  if (/\.(mp4|webm|ogg|mov)(?:[?#].*)?$/i.test(v)) return "video";
+  if (/\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(v)) return "video";
   if (/\.(png|jpe?g|webp|gif)(?:[?#].*)?$/i.test(v)) return "image";
   return "text";
 }
@@ -638,7 +638,6 @@ function renderSmileContent(value) {
           disablepictureinpicture
         ></video>
 
-        <button type="button" class="smile-play-button" hidden>▶ הפעלת הסרטון</button>
         <div class="smile-video-error" hidden>
           😄 לא ניתן לטעון את הסרטון
         </div>
@@ -672,19 +671,24 @@ function prepareSmileVideo(video) {
   }
 
   video.dataset.prepared = "true";
+  video.defaultMuted = true;
+  video.muted = true;
+  video.playsInline = true;
+  const resume = () => {
+    if (!video.closest(".slide")?.classList.contains("active")) return;
+    video.muted = true;
+    video.play().catch(error => console.warn("Smile autoplay:", error));
+  };
+  video.addEventListener("canplay", resume);
+  video.addEventListener("loadeddata", resume);
+  video.addEventListener("pause", () => {
+    if (!video.ended && video.closest(".slide")?.classList.contains("active")) resume();
+  });
 
   const frame = video.closest(".smile-media-frame");
   if (!frame) return;
 
   const errorBox = frame.querySelector(".smile-video-error");
-  const playButton = frame.querySelector(".smile-play-button");
-  if (playButton) playButton.addEventListener("click", () => {
-    video.muted = true;
-    video.play().then(() => { playButton.hidden = true; }).catch(() => {
-      playButton.hidden = false;
-    });
-  });
-  video.addEventListener("playing", () => { if (playButton) playButton.hidden = true; });
 
   const applyLayout = () => {
     const width = Number(video.videoWidth) || 0;
@@ -753,6 +757,7 @@ function setSmileVideoPlayback(activeSlide) {
     if (shouldPlay) {
       document.body.classList.add("smile-video-playing");
       video.muted = true;
+      video.autoplay = true;
 
       try {
         if (video.ended || video.currentTime > 0.15) {
@@ -768,11 +773,10 @@ function setSmileVideoPlayback(activeSlide) {
       ) {
         playPromise.catch(error => {
           console.warn("הפעלת הסרטון נכשלה:", error);
-          const button = video.closest(".smile-media-frame")?.querySelector(".smile-play-button");
-          if (button && document.querySelector(".smile-slide.active")?.contains(video)) button.hidden = false;
         });
       }
     } else {
+      video.autoplay = false;
       video.pause();
 
       if (!document.querySelector(".smile-slide.active .smile-video")) {
@@ -862,7 +866,7 @@ function fitFaithText(root = document) {
       return;
     }
 
-    let fontSize = Math.min(64, Math.max(32, Math.round(window.innerHeight * 0.05)));
+    let fontSize = 24;
     const minimumFontSize = 16;
 
     const applySize = function(size) {
@@ -1129,81 +1133,58 @@ function splitFaithIntoParagraphs(faith) {
   return paragraphs;
 }
 
-// Split styled text at the nearest word boundary to the midpoint.
-// Slicing the original runs preserves bold, colors and links.
-function faithPages(faith) {
-  const sourceRuns = Array.isArray(faith.richText) && faith.richText.length
-    ? faith.richText : [{text: faith.content || ""}];
-  // Sheets/PDF text often contains hard wraps from a narrow source column.
-  // Reflow single line breaks across styled runs, retaining paragraph breaks.
-  const sourceText = sourceRuns.map(run => String(run.text || "")).join("");
-  const replacements = new Map();
-  for (const match of sourceText.matchAll(/\r?\n(?:[ \t]*\r?\n)*/g)) {
-    const paragraphBreak = (match[0].match(/\n/g) || []).length > 1;
-    for (let i = 0; i < match[0].length; i++) {
-      replacements.set(match.index + i, i === 0 ? (paragraphBreak ? "\n\n" : " ") : "");
+function renderFaithColumns(faith) {
+  const paragraphs = splitFaithIntoParagraphs(faith);
+
+  if (!paragraphs.length) {
+    return "";
+  }
+
+  const paragraphWeight = paragraph =>
+    paragraph.reduce(
+      (sum, segment) => sum + String((segment && segment.text) || "").length,
+      0
+    );
+
+  const totalWeight = paragraphs.reduce(
+    (sum, paragraph) => sum + paragraphWeight(paragraph),
+    0
+  );
+
+  let running = 0;
+  let splitIndex = Math.ceil(paragraphs.length / 2);
+
+  for (let i = 0; i < paragraphs.length - 1; i += 1) {
+    running += paragraphWeight(paragraphs[i]);
+
+    if (running >= totalWeight / 2) {
+      splitIndex = i + 1;
+      break;
     }
   }
-  let sourceOffset = 0;
-  const runs = sourceRuns.map(run => {
-    const value = String(run.text || "");
-    const text = Array.from({length: value.length}, (_, i) => {
-      const index = sourceOffset + i;
-      return replacements.has(index) ? replacements.get(index) : value[i];
-    }).join("");
-    sourceOffset += value.length;
-    return {...run, text};
-  });
-  const text = runs.map(run => String(run.text || "")).join("");
-  if (text.length < 700) return [runs];
-  const middle = Math.floor(text.length / 2);
-  let cut = middle;
-  const paragraphCuts = Array.from(text.matchAll(/\n\n/g), match => match.index + 2)
-    .filter(index => text.slice(0, index).trim() && text.slice(index).trim());
-  if (paragraphCuts.length) {
-    cut = paragraphCuts.reduce((best, index) =>
-      Math.abs(index - middle) < Math.abs(best - middle) ? index : best);
-  } else for (let distance = 0; distance < middle; distance++) {
-    if (/\s/.test(text[middle + distance] || "")) { cut = middle + distance + 1; break; }
-    if (/\s/.test(text[middle - distance] || "")) { cut = middle - distance + 1; break; }
-  }
-  const pages = [[], []];
-  let offset = 0;
-  runs.forEach(run => {
-    const value = String(run.text || "");
-    const boundary = Math.max(0, Math.min(value.length, cut - offset));
-    if (boundary) pages[0].push({...run, text: value.slice(0, boundary)});
-    if (boundary < value.length) pages[1].push({...run, text: value.slice(boundary)});
-    offset += value.length;
-  });
-  return pages;
+
+  const rightColumn = paragraphs.slice(0, splitIndex);
+  const leftColumn = paragraphs.slice(splitIndex);
+
+  const renderParagraphs = list =>
+    list.map(paragraph => `
+      <p class="faith-paragraph">
+        ${paragraph.map(renderFaithStyledSegment).join("")}
+      </p>
+    `).join("");
+
+  return `
+    <div class="faith-column faith-column-right">
+      ${renderParagraphs(rightColumn)}
+    </div>
+    <div class="faith-column faith-column-left">
+      ${renderParagraphs(leftColumn)}
+    </div>
+  `;
 }
 
-function renderFaithPage(runs) {
-  // Build actual paragraph elements, retaining styling even across run boundaries.
-  const text = runs.map(run => String(run.text || "")).join("");
-  const paragraphs = [];
-  let start = 0;
-  const appendParagraph = end => {
-    let offset = 0;
-    const segments = [];
-    runs.forEach(run => {
-      const value = String(run.text || "");
-      const from = Math.max(0, start - offset);
-      const to = Math.min(value.length, end - offset);
-      if (to > from) segments.push({...run, text: value.slice(from, to)});
-      offset += value.length;
-    });
-    if (segments.some(run => run.text.trim())) paragraphs.push(segments);
-  };
-  for (const match of text.matchAll(/\n\n+/g)) {
-    appendParagraph(match.index);
-    start = match.index + match[0].length;
-  }
-  appendParagraph(text.length);
-  return `<div class="faith-column faith-column-right">${paragraphs.map(paragraph =>
-    `<p class="faith-paragraph">${paragraph.map(renderFaithStyledSegment).join("")}</p>`
-  ).join("")}</div>`;
+function renderFaithRichText(faith) {
+  return renderFaithColumns(faith);
 }
 
 function renderFaithSlide(data) {
@@ -1230,8 +1211,7 @@ function renderFaithSlide(data) {
       ? Number(faith.slideSeconds)
       : 45;
 
-  const pages = faithPages(faith);
-  return pages.map((runs, pageIndex) => `
+  return `
     <section
       class="slide faith-slide"
       data-slide-seconds="${slideSeconds}"
@@ -1239,7 +1219,7 @@ function renderFaithSlide(data) {
       <div class="slide-inner faith-slide-inner faith-text-mode">
         <header class="faith-slide-header">
           <div class="faith-slide-title">
-            ✨ ${escapeHtml(title)}${pages.length > 1 ? ` — ${pageIndex + 1}/2` : ""}
+            ✨ ${escapeHtml(title)}
           </div>
           <div class="faith-slide-author">
             מאת יניר מנשה
@@ -1248,12 +1228,12 @@ function renderFaithSlide(data) {
 
         <div class="faith-text-shell">
           <div class="faith-text-content faith-columns">
-            ${renderFaithPage(runs)}
+            ${renderFaithRichText(faith)}
           </div>
         </div>
       </div>
     </section>
-  `).join("");
+  `;
 }
 
 
@@ -1625,6 +1605,7 @@ function render(data) {
   currentSlide = 0;
 
   slideshow.innerHTML = buildSlides(data).join("");
+  cacheSmileVideo();
   observeCoordinatorMessage();
 
   requestAnimationFrame(() => {
@@ -2035,13 +2016,7 @@ window.addEventListener("offline", () => {
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    const wasControlled = Boolean(navigator.serviceWorker.controller);
-    let reloading = false;
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (wasControlled && !reloading) { reloading = true; location.reload(); }
-    });
-    navigator.serviceWorker.register("service-worker.js", { updateViaCache: "none" })
-      .then(registration => registration.update()).catch(console.error);
+    navigator.serviceWorker.register("service-worker.js").catch(console.error);
   });
 }
 
@@ -2131,4 +2106,18 @@ window.addEventListener("resize", () => {
   window.requestAnimationFrame(() => {
     fitCoordinatorMessageText(document);
   });
+});
+
+// Save a complete copy even on the first visit, before the worker controls the page.
+function cacheSmileVideo() {
+  const video = document.querySelector(".smile-video");
+  if (!video || !("serviceWorker" in navigator)) return;
+  navigator.serviceWorker.ready.then(registration => {
+    const worker = navigator.serviceWorker.controller || registration.active;
+    worker?.postMessage({type: "CACHE_SMILE_VIDEO", url: video.src});
+  }).catch(console.warn);
+}
+window.addEventListener("online", cacheSmileVideo);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) setSmileVideoPlayback(document.querySelector(".slide.active"));
 });

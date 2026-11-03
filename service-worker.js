@@ -1,17 +1,19 @@
-const CACHE_NAME = "matanim-haifa-live-v101-coordinator-fit";
+const CACHE_NAME = "matanim-haifa-live-v102-smile";
 
 const APP_FILES = [
   "./",
   "./index.html",
-  "./style.css?v=100",
-  "./app.js?v=100",
-  "./config.js?v=100",
+  "./style.css",
+  "./app.js",
+  "./config.js",
   "./data.example.json",
   "./manifest.webmanifest"
 ];
 
 
 // Gallery cache survives ordinary application-shell version updates.
+const VIDEO_CACHE = "matanim-haifa-smile-v1";
+const pendingVideos = new Map();
 const GALLERY_CACHE = "matanim-haifa-coordinator-images-v1";
 
 self.addEventListener("message", event => {
@@ -53,7 +55,7 @@ self.addEventListener("activate", event => {
     caches.keys().then(keys =>
       Promise.all(
         keys
-          .filter(key => key.startsWith("matanim-haifa-live-") && key !== CACHE_NAME && key !== GALLERY_CACHE)
+          .filter(key => key.startsWith("matanim-haifa-live-") && key !== CACHE_NAME && key !== GALLERY_CACHE && key !== VIDEO_CACHE)
           .map(key => caches.delete(key))
       )
     )
@@ -71,10 +73,95 @@ function isPdfRequest(request) {
 
 function isVideoRequest(request) {
   try {
-    return /\.(mp4|webm|ogg|mov)$/i.test(new URL(request.url).pathname);
+    return /\.(mp4|webm|ogg|mov|m4v)$/i.test(new URL(request.url).pathname);
   } catch {
     return false;
   }
+}
+
+async function getCachedFullVideo(request) {
+  const cache = await caches.open(VIDEO_CACHE);
+  const key = new Request(request.url, {credentials: "same-origin"});
+  const cached = await cache.match(key);
+  if (cached && cached.status === 200) return cached;
+  if (!pendingVideos.has(key.url)) {
+    const task = (async () => {
+      const response = await fetch(key);
+      if (!response.ok || response.status !== 200 || response.type === "opaque") {
+        throw new Error("A complete readable video response is required for offline playback");
+      }
+      await cache.put(key, response);
+    })().finally(() => pendingVideos.delete(key.url));
+    pendingVideos.set(key.url, task);
+  }
+  await pendingVideos.get(key.url);
+  return cache.match(key);
+}
+
+self.addEventListener("message", event => {
+  if (event.data?.type !== "CACHE_SMILE_VIDEO") return;
+  event.waitUntil((async () => {
+    try {
+      const url = new URL(event.data.url, self.registration.scope);
+      if (!/^https?:$/.test(url.protocol)) return;
+      await getCachedFullVideo(new Request(url.href));
+    } catch (error) { console.warn("Smile offline save failed:", error); }
+  })());
+});
+
+async function handleCachedVideoRange(request) {
+  const fullResponse = await getCachedFullVideo(request);
+
+  if (!fullResponse || !fullResponse.ok) {
+    return fullResponse || Response.error();
+  }
+
+  const rangeHeader = request.headers.get("range");
+
+  if (!rangeHeader) {
+    return fullResponse;
+  }
+
+  const match = /^bytes=(\d+)-(\d*)$/i.exec(rangeHeader);
+
+  if (!match) {
+    return fullResponse;
+  }
+
+  const blob = await fullResponse.blob();
+  const totalSize = blob.size;
+  const start = Number(match[1]);
+  const requestedEnd = match[2] ? Number(match[2]) : totalSize - 1;
+  const end = Math.min(requestedEnd, totalSize - 1);
+
+  if (
+    !Number.isFinite(start) ||
+    !Number.isFinite(end) ||
+    start < 0 ||
+    start > end ||
+    start >= totalSize
+  ) {
+    return new Response(null, {
+      status: 416,
+      headers: {
+        "Content-Range": `bytes */${totalSize}`
+      }
+    });
+  }
+
+  const chunk = blob.slice(start, end + 1, blob.type || "video/mp4");
+
+  return new Response(chunk, {
+    status: 206,
+    statusText: "Partial Content",
+    headers: {
+      "Content-Type": blob.type || "video/mp4",
+      "Content-Length": String(chunk.size),
+      "Content-Range": `bytes ${start}-${end}/${totalSize}`,
+      "Accept-Ranges": "bytes",
+      "Cache-Control": "public, max-age=31536000, immutable"
+    }
+  });
 }
 
 self.addEventListener("fetch", event => {
@@ -95,30 +182,9 @@ self.addEventListener("fetch", event => {
   }
 
   if (isVideoRequest(request)) {
-    event.respondWith(fetch(request));
-    return;
-  }
-
-  const url = new URL(request.url);
-  const appShell = url.origin === self.location.origin &&
-    (request.mode === "navigate" || /\.(?:js|css|webmanifest)$/.test(url.pathname));
-  if (appShell) {
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE_NAME);
-      try {
-        const response = await fetch(request, {cache: "no-cache"});
-        if (response.ok) {
-          await cache.put(request, response.clone());
-          return response;
-        }
-        return (await cache.match(request)) || response;
-      } catch (error) {
-        const cached = await cache.match(request);
-        if (cached) return cached;
-        if (request.mode === "navigate") return (await cache.match("./index.html")) || Response.error();
-        return Response.error();
-      }
-    })());
+    event.respondWith(
+      handleCachedVideoRange(request).catch(() => caches.match(request))
+    );
     return;
   }
 
