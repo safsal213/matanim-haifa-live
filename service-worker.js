@@ -1,10 +1,13 @@
-const CACHE_NAME = "matanim-haifa-live-v103-coordinator-cards";
+const CACHE_NAME = "matanim-haifa-live-v104-faith100-smile-cards";
 
 const APP_FILES = [
   "./",
   "./index.html",
   "./style.css",
   "./app.js",
+  "./app.js?v=104",
+  "./config.js?v=104",
+  "./style.css?v=104",
   "./config.js",
   "./data.example.json",
   "./manifest.webmanifest"
