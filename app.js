@@ -1,3 +1,4 @@
+let coordinatorCardTimer = null;
 const CACHE_KEY = "matanimHaifaLiveData";
 const { DATA_URL, DEFAULT_SLIDE_SECONDS, REFRESH_MINUTES } = window.APP_CONFIG;
 
@@ -375,6 +376,7 @@ function launchBirthdayConfetti() {
 
 function activateSlideEffects(slide) {
   stopAnnouncementRotation();
+  startCoordinatorCards(slide);
 
   document.body.classList.toggle(
     "faith-mode-active",
@@ -1501,63 +1503,7 @@ function buildSlides(data) {
     `,
     renderFaithSlide(data),
 
-    `
-      <section
-        class="slide coordinator-message-slide"
-        data-slide-seconds="${
-          Number(data.coordinatorMessages?.[0]?.slideSeconds) > 0
-            ? Number(data.coordinatorMessages[0].slideSeconds)
-            : Number(s.slideSeconds || 10)
-        }"
-      >
-        <div class="slide-inner coordinator-message-inner">
-          <header class="coordinator-message-header">
-            <div class="coordinator-message-main-title">
-              🚂 הודעות מטעם רכז הנהגים
-            </div>
-
-            <div class="coordinator-message-name">
-              ${escapeHtml(
-                s.coordinatorName ||
-                "סשה ארנזון"
-              )}
-            </div>
-          </header>
-
-          <div class="coordinator-message-divider"></div>
-
-          <div class="coordinator-message-body">
-            <div
-              class="coordinator-message-text ${getCoordinatorTextSizeClass(
-                data.coordinatorMessages?.[0]?.content || ""
-              )}"
-            >${
-              Array.isArray(data.coordinatorMessages) &&
-              data.coordinatorMessages.length
-                ? renderCoordinatorRichText(
-                    data.coordinatorMessages[0]
-                  )
-                : "אין הודעות חדשות כרגע"
-            }</div>
-          </div>
-
-          ${
-            Array.isArray(data.coordinatorMessages) &&
-            data.coordinatorMessages.length &&
-            data.coordinatorMessages[0].publishDate
-              ? `
-                <div class="coordinator-message-date">
-                  📅 פורסם:
-                  ${escapeHtml(
-                    data.coordinatorMessages[0].publishDate
-                  )}
-                </div>
-              `
-              : ""
-          }
-        </div>
-      </section>
-    `,
+    renderCoordinatorCards(data),
     renderCoordinatorGallerySlide(data),
     renderAnnouncementSlide(data),
     `
@@ -1811,12 +1757,8 @@ function restartSlideTimer() {
   const isCoordinatorSlide =
     activeSlide?.classList.contains("coordinator-message-slide");
 
-  const coordinatorSeconds = Number(
-    appData?.coordinatorMessages?.[0]?.slideSeconds
-  );
-
   const customSeconds = isCoordinatorSlide
-    ? coordinatorSeconds
+    ? Number(activeSlide.dataset.slideSeconds)
     : Number(activeSlide?.dataset?.slideSeconds);
 
   const defaultSeconds =
@@ -2121,3 +2063,45 @@ window.addEventListener("online", cacheSmileVideo);
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) setSmileVideoPlayback(document.querySelector(".slide.active"));
 });
+
+function renderCoordinatorCards(data) {
+  const messages = (Array.isArray(data.coordinatorMessages) ? data.coordinatorMessages : [])
+    .filter(item => item.active !== false && (String(item.content || "").trim() || item.richText?.some(run => run.text)));
+  const items = messages.length ? messages : [{content: "אין הודעות חדשות כרגע", slideSeconds: 10}];
+  const duration = item => Number(item.slideSeconds) > 0 ? Math.max(3, Number(item.slideSeconds)) : 30;
+  const seconds = items.reduce((sum, item) => sum + duration(item), 0);
+  return `<section class="slide coordinator-message-slide coordinator-cards-slide" data-slide-seconds="${seconds}">
+    ${items.map((item, index) => `<article class="coordinator-floating-card announcement-item${index === 0 ? " is-current" : ""}" data-card-seconds="${duration(item)}" aria-hidden="${index !== 0}">
+      <div class="slide-inner coordinator-message-inner announcement-card">
+        <header class="coordinator-message-header">
+          <div class="coordinator-message-main-title">🚂 הודעות מטעם רכז הנהגים</div>
+          <div class="coordinator-message-name">${escapeHtml(data.settings?.coordinatorName || "סשה ארנזון")}</div>
+        </header>
+        <div class="coordinator-message-divider"></div>
+        <div class="coordinator-message-body"><div class="coordinator-message-text">${renderCoordinatorRichText(item)}</div></div>
+        <div class="coordinator-card-footer">
+          <span>${item.publishDate ? `📅 פורסם: ${escapeHtml(item.publishDate)}` : ""}</span>
+          ${items.length > 1 ? `<span class="coordinator-card-position">הודעה ${index + 1} מתוך ${items.length}</span>` : ""}
+        </div>
+      </div>
+    </article>`).join("")}
+  </section>`;
+}
+function startCoordinatorCards(slide) {
+  clearTimeout(coordinatorCardTimer);
+  coordinatorCardTimer = null;
+  if (!slide?.classList.contains("coordinator-cards-slide")) return;
+  const cards = Array.from(slide.querySelectorAll(".coordinator-floating-card"));
+  let index = 0;
+  const show = () => {
+    cards.forEach((card, i) => {
+      card.classList.toggle("is-current", i === index);
+      card.setAttribute("aria-hidden", String(i !== index));
+    });
+    fitCoordinatorMessageText(slide);
+    if (index < cards.length - 1) {
+      coordinatorCardTimer = setTimeout(() => { index++; show(); }, Number(cards[index].dataset.cardSeconds) * 1000);
+    }
+  };
+  show();
+}
