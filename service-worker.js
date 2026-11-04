@@ -1,13 +1,13 @@
-const CACHE_NAME = "matanim-haifa-live-v105-tv-low-memory";
+const CACHE_NAME = "matanim-haifa-live-v106-no-intro-test";
 
 const APP_FILES = [
   "./",
   "./index.html",
   "./style.css",
   "./app.js",
-  "./app.js?v=105",
-  "./config.js?v=105",
-  "./style.css?v=105",
+  "./app.js?v=106",
+  "./config.js?v=106",
+  "./style.css?v=106",
   "./config.js",
   "./data.example.json",
   "./manifest.webmanifest"
