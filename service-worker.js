@@ -1,13 +1,13 @@
-const CACHE_NAME = "matanim-haifa-live-v104-faith100-smile-cards";
+const CACHE_NAME = "matanim-haifa-live-v105-tv-low-memory";
 
 const APP_FILES = [
   "./",
   "./index.html",
   "./style.css",
   "./app.js",
-  "./app.js?v=104",
-  "./config.js?v=104",
-  "./style.css?v=104",
+  "./app.js?v=105",
+  "./config.js?v=105",
+  "./style.css?v=105",
   "./config.js",
   "./data.example.json",
   "./manifest.webmanifest"
@@ -108,63 +108,62 @@ self.addEventListener("message", event => {
       const url = new URL(event.data.url, self.registration.scope);
       if (!/^https?:$/.test(url.protocol)) return;
       await getCachedFullVideo(new Request(url.href));
+      const cache = await caches.open(VIDEO_CACHE);
+      for (const key of await cache.keys()) {
+        if (key.url !== url.href) await cache.delete(key);
+      }
     } catch (error) { console.warn("Smile offline save failed:", error); }
   })());
 });
 
 async function handleCachedVideoRange(request) {
-  const fullResponse = await getCachedFullVideo(request);
-
-  if (!fullResponse || !fullResponse.ok) {
-    return fullResponse || Response.error();
+  const cache = await caches.open(VIDEO_CACHE);
+  const fullResponse = await cache.match(request.url);
+  // Start online playback immediately; background prefetch handles offline storage.
+  if (!fullResponse) return fetch(request);
+  const range = request.headers.get("range");
+  if (!range || !fullResponse.body) return fullResponse;
+  const total = Number(fullResponse.headers.get("Content-Length"));
+  // A full 200 response remains valid when the server did not supply a length.
+  if (!Number.isSafeInteger(total) || total <= 0) return fullResponse;
+  const match = /^bytes=(\d*)-(\d*)$/i.exec(range);
+  if (!match || (!match[1] && !match[2])) return fullResponse;
+  const start = match[1] ? Number(match[1]) : Math.max(0, total - Number(match[2]));
+  const end = match[1] && match[2] ? Math.min(Number(match[2]), total - 1) : total - 1;
+  if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start > end || start >= total) {
+    fullResponse.body.cancel().catch(() => {});
+    return new Response(null, {status: 416, headers: {"Content-Range": `bytes */${total}`}});
   }
-
-  const rangeHeader = request.headers.get("range");
-
-  if (!rangeHeader) {
-    return fullResponse;
-  }
-
-  const match = /^bytes=(\d+)-(\d*)$/i.exec(rangeHeader);
-
-  if (!match) {
-    return fullResponse;
-  }
-
-  const blob = await fullResponse.blob();
-  const totalSize = blob.size;
-  const start = Number(match[1]);
-  const requestedEnd = match[2] ? Number(match[2]) : totalSize - 1;
-  const end = Math.min(requestedEnd, totalSize - 1);
-
-  if (
-    !Number.isFinite(start) ||
-    !Number.isFinite(end) ||
-    start < 0 ||
-    start > end ||
-    start >= totalSize
-  ) {
-    return new Response(null, {
-      status: 416,
-      headers: {
-        "Content-Range": `bytes */${totalSize}`
-      }
-    });
-  }
-
-  const chunk = blob.slice(start, end + 1, blob.type || "video/mp4");
-
-  return new Response(chunk, {
-    status: 206,
-    statusText: "Partial Content",
-    headers: {
-      "Content-Type": blob.type || "video/mp4",
-      "Content-Length": String(chunk.size),
-      "Content-Range": `bytes ${start}-${end}/${totalSize}`,
-      "Accept-Ranges": "bytes",
-      "Cache-Control": "public, max-age=31536000, immutable"
-    }
+  // Read bounded chunks instead of materialising the entire video for every seek.
+  const reader = fullResponse.body.getReader();
+  let offset = 0;
+  const stream = new ReadableStream({
+    async pull(controller) {
+      try {
+        while (true) {
+          const {done, value} = await reader.read();
+          if (done) { controller.close(); return; }
+          const from = Math.max(0, start - offset);
+          const to = Math.min(value.byteLength, end + 1 - offset);
+          offset += value.byteLength;
+          if (to > from) controller.enqueue(value.slice(from, to));
+          if (offset > end) {
+            controller.close();
+            await reader.cancel();
+            return;
+          }
+          if (to > from) return;
+        }
+      } catch (error) { controller.error(error); }
+    },
+    cancel(reason) { return reader.cancel(reason); }
   });
+  return new Response(stream, {status: 206, headers: {
+    "Content-Type": fullResponse.headers.get("Content-Type") || "video/mp4",
+    "Content-Length": String(end - start + 1),
+    "Content-Range": `bytes ${start}-${end}/${total}`,
+    "Accept-Ranges": "bytes"
+  }});
 }
 
 self.addEventListener("fetch", event => {
@@ -186,7 +185,7 @@ self.addEventListener("fetch", event => {
 
   if (isVideoRequest(request)) {
     event.respondWith(
-      handleCachedVideoRange(request).catch(() => caches.match(request))
+      handleCachedVideoRange(request).catch(error => { console.warn("Video range failed", error); return caches.match(request); })
     );
     return;
   }

@@ -1,3 +1,5 @@
+const coordinatorFitCache = new WeakMap();
+let smileCacheTimer = null;
 let coordinatorCardTimer = null;
 const CACHE_KEY = "matanimHaifaLiveData";
 const { DATA_URL, DEFAULT_SLIDE_SECONDS, REFRESH_MINUTES } = window.APP_CONFIG;
@@ -636,7 +638,7 @@ function renderSmileContent(value) {
           src="${escapeHtml(resolvedValue)}"
           muted
           playsinline
-          preload="auto"
+          preload="none"
           disablepictureinpicture
         ></video>
 
@@ -941,6 +943,8 @@ function fitCoordinatorMessageText(root = document) {
     const container = element.closest(".coordinator-message-body");
     if (!container || !container.clientWidth || !container.clientHeight) return;
 
+    const fitKey = `${container.clientWidth}:${container.clientHeight}:${element.innerHTML}`;
+    if (coordinatorFitCache.get(element) === fitKey) return;
     // Measure real wrapping, including rich-text spans, instead of character counts.
     const box = getComputedStyle(container);
     const width = container.clientWidth - parseFloat(box.paddingLeft) - parseFloat(box.paddingRight);
@@ -952,13 +956,14 @@ function fitCoordinatorMessageText(root = document) {
     let low = 0;
     let high = height / 1.16;
     // No fixed minimum: long messages must remain complete as well.
-    for (let step = 0; step < 20; step++) {
+    for (let step = 0; step < 12; step++) {
       const size = (low + high) / 2;
       applySize(size);
       if (fits()) low = size;
       else high = size;
     }
     applySize(Math.floor(low * 100) / 100);
+    coordinatorFitCache.set(element, fitKey);
   });
 }
 
@@ -1618,7 +1623,7 @@ function preloadSlideMedia(slide) {
     image.removeAttribute("data-src");
   });
   slide.querySelectorAll("video").forEach(video => {
-    video.preload = "auto";
+    video.preload = "metadata";
     prepareSmileVideo(video);
   });
 }
@@ -2082,12 +2087,16 @@ window.addEventListener("resize", () => {
 
 // Save a complete copy even on the first visit, before the worker controls the page.
 function cacheSmileVideo() {
-  const video = document.querySelector(".smile-video");
-  if (!video || !("serviceWorker" in navigator)) return;
-  navigator.serviceWorker.ready.then(registration => {
-    const worker = navigator.serviceWorker.controller || registration.active;
-    worker?.postMessage({type: "CACHE_SMILE_VIDEO", url: video.src});
-  }).catch(console.warn);
+  clearTimeout(smileCacheTimer);
+  // Let the TV finish rendering and the introduction before downloading offline media.
+  smileCacheTimer = setTimeout(() => {
+    const video = document.querySelector(".smile-video");
+    if (!video || !("serviceWorker" in navigator) || !navigator.onLine) return;
+    navigator.serviceWorker.ready.then(registration => {
+      const worker = navigator.serviceWorker.controller || registration.active;
+      worker?.postMessage({type: "CACHE_SMILE_VIDEO", url: video.src});
+    }).catch(console.warn);
+  }, 15000);
 }
 window.addEventListener("online", cacheSmileVideo);
 document.addEventListener("visibilitychange", () => {
